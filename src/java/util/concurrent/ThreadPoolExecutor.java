@@ -9,6 +9,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.*;
 
+/**
+ * 线程池管理执行类
+ */
 public class ThreadPoolExecutor extends AbstractExecutorService {
 
     private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING, 0));
