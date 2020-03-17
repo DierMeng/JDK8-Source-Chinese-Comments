@@ -972,44 +972,15 @@ public final class System {
     }
 
     /**
-     * Runs the garbage collector.
-     * <p>
-     * Calling the <code>gc</code> method suggests that the Java Virtual
-     * Machine expend effort toward recycling unused objects in order to
-     * make the memory they currently occupy available for quick reuse.
-     * When control returns from the method call, the Java Virtual
-     * Machine has made a best effort to reclaim space from all discarded
-     * objects.
-     * <p>
-     * The call <code>System.gc()</code> is effectively equivalent to the
-     * call:
-     * <blockquote><pre>
-     * Runtime.getRuntime().gc()
-     * </pre></blockquote>
-     *
-     * @see     java.lang.Runtime#gc()
+     * 建议垃圾收集器尽快进行垃圾收集，具体何时执行仍然由 JVM 来判断
      */
     public static void gc() {
         Runtime.getRuntime().gc();
     }
 
     /**
-     * Runs the finalization methods of any objects pending finalization.
-     * <p>
-     * Calling this method suggests that the Java Virtual Machine expend
-     * effort toward running the <code>finalize</code> methods of objects
-     * that have been found to be discarded but whose <code>finalize</code>
-     * methods have not yet been run. When control returns from the
-     * method call, the Java Virtual Machine has made a best effort to
-     * complete all outstanding finalizations.
-     * <p>
-     * The call <code>System.runFinalization()</code> is effectively
-     * equivalent to the call:
-     * <blockquote><pre>
-     * Runtime.getRuntime().runFinalization()
-     * </pre></blockquote>
-     *
-     * @see     java.lang.Runtime#runFinalization()
+     * 强制调用已经失去饮用对象的 finalize()
+     * 加上 System.gc() 同时使用有利于更快地执行垃圾回收
      */
     public static void runFinalization() {
         Runtime.getRuntime().runFinalization();

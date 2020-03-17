@@ -1,27 +1,3 @@
-/*
- * Copyright (c) 1997, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
 
 package java.lang;
 import java.lang.ref.*;
@@ -30,46 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 /**
- * This class provides thread-local variables.  These variables differ from
- * their normal counterparts in that each thread that accesses one (via its
- * {@code get} or {@code set} method) has its own, independently initialized
- * copy of the variable.  {@code ThreadLocal} instances are typically private
- * static fields in classes that wish to associate state with a thread (e.g.,
- * a user ID or Transaction ID).
- *
- * <p>For example, the class below generates unique identifiers local to each
- * thread.
- * A thread's id is assigned the first time it invokes {@code ThreadId.get()}
- * and remains unchanged on subsequent calls.
- * <pre>
- * import java.util.concurrent.atomic.AtomicInteger;
- *
- * public class ThreadId {
- *     // Atomic integer containing the next thread ID to be assigned
- *     private static final AtomicInteger nextId = new AtomicInteger(0);
- *
- *     // Thread local variable containing each thread's ID
- *     private static final ThreadLocal&lt;Integer&gt; threadId =
- *         new ThreadLocal&lt;Integer&gt;() {
- *             &#64;Override protected Integer initialValue() {
- *                 return nextId.getAndIncrement();
- *         }
- *     };
- *
- *     // Returns the current thread's unique ID, assigning it if necessary
- *     public static int get() {
- *         return threadId.get();
- *     }
- * }
- * </pre>
- * <p>Each thread holds an implicit reference to its copy of a thread-local
- * variable as long as the thread is alive and the {@code ThreadLocal}
- * instance is accessible; after a thread goes away, all of its copies of
- * thread-local instances are subject to garbage collection (unless other
- * references to these copies exist).
- *
- * @author  Josh Bloch and Doug Lea
- * @since   1.2
+ * 传递线程内变量，可用来透传全局上下文
  */
 public class ThreadLocal<T> {
     /**
@@ -149,36 +86,37 @@ public class ThreadLocal<T> {
     }
 
     /**
-     * Returns the value in the current thread's copy of this
-     * thread-local variable.  If the variable has no value for the
-     * current thread, it is first initialized to the value returned
-     * by an invocation of the {@link #initialValue} method.
+     * 每个线程都有自己的 ThreadLocalMap
      *
-     * @return the current thread's value of this thread-local
+     * 始终没有 get 操作的 ThreadLocal 对象是没有意义的
+     *
+     * get()、set()、remove() 在 ThreadLocal 中对它们只做校验和判断，最终的实现会落在 ThreadLocalMap 上
      */
     public T get() {
         Thread t = Thread.currentThread();
         ThreadLocalMap map = getMap(t);
+        // 如果 map 已经创建，就表示 Thread 类的 threadLocals 属性已经初始化
         if (map != null) {
             ThreadLocalMap.Entry e = map.getEntry(this);
+            // 如果键值对为空，依然会执行到 setInitialValue
             if (e != null) {
-                @SuppressWarnings("unchecked")
                 T result = (T)e.value;
                 return result;
             }
         }
+        // 如果 map 为空，则直接执行 setInitialValue
         return setInitialValue();
     }
 
     /**
-     * Variant of set() to establish initialValue. Used instead
-     * of set() in case user has overridden the set() method.
-     *
-     * @return the initial value
+     * 给 ThreadLocal 变量设置初始值
      */
     private T setInitialValue() {
+
+        // 这是一个保护方法
         T value = initialValue();
         Thread t = Thread.currentThread();
+        // getMap 的源码就是提取线程对象 t 的 ThreadLocalMap 属性：t.threadLocals
         ThreadLocalMap map = getMap(t);
         if (map != null)
             map.set(this, value);
@@ -188,13 +126,7 @@ public class ThreadLocal<T> {
     }
 
     /**
-     * Sets the current thread's copy of this thread-local variable
-     * to the specified value.  Most subclasses will have no need to
-     * override this method, relying solely on the {@link #initialValue}
-     * method to set the values of thread-locals.
-     *
-     * @param value the value to be stored in the current thread's copy of
-     *        this thread-local.
+     * 如果没有 set 操作的 ThreadLocal，容易引起脏数据问题
      */
     public void set(T value) {
         Thread t = Thread.currentThread();
@@ -206,15 +138,7 @@ public class ThreadLocal<T> {
     }
 
     /**
-     * Removes the current thread's value for this thread-local
-     * variable.  If this thread-local variable is subsequently
-     * {@linkplain #get read} by the current thread, its value will be
-     * reinitialized by invoking its {@link #initialValue} method,
-     * unless its value is {@linkplain #set set} by the current thread
-     * in the interim.  This may result in multiple invocations of the
-     * {@code initialValue} method in the current thread.
-     *
-     * @since 1.5
+     * 如果没有 remove 操作，容易引起内存泄漏
      */
      public void remove() {
          ThreadLocalMap m = getMap(Thread.currentThread());
@@ -223,33 +147,21 @@ public class ThreadLocal<T> {
      }
 
     /**
-     * Get the map associated with a ThreadLocal. Overridden in
-     * InheritableThreadLocal.
-     *
-     * @param  t the current thread
-     * @return the map
+     * 提取线程对象的 ThreadLocalMap 属性：t.threadLocals
      */
     ThreadLocalMap getMap(Thread t) {
         return t.threadLocals;
     }
 
     /**
-     * Create the map associated with a ThreadLocal. Overridden in
-     * InheritableThreadLocal.
-     *
-     * @param t the current thread
-     * @param firstValue value for the initial entry of the map
+     * Thread 中的 ThreadLocalMap 属性的赋值是在这里进行
      */
     void createMap(Thread t, T firstValue) {
         t.threadLocals = new ThreadLocalMap(this, firstValue);
     }
 
     /**
-     * Factory method to create map of inherited thread locals.
-     * Designed to be called only from Thread constructor.
-     *
-     * @param  parentMap the map associated with parent thread
-     * @return a map containing the parent's inheritable bindings
+     * 私有构造方法来产生一个实例对象，把父线程不为 null 的线程变量都拷贝过来
      */
     static ThreadLocalMap createInheritedMap(ThreadLocalMap parentMap) {
         return new ThreadLocalMap(parentMap);
@@ -286,24 +198,22 @@ public class ThreadLocal<T> {
     }
 
     /**
-     * ThreadLocalMap is a customized hash map suitable only for
-     * maintaining thread local values. No operations are exported
-     * outside of the ThreadLocal class. The class is package private to
-     * allow declaration of fields in class Thread.  To help deal with
-     * very large and long-lived usages, the hash table entries use
-     * WeakReferences for keys. However, since reference queues are not
-     * used, stale entries are guaranteed to be removed only when
-     * the table starts running out of space.
+     * 栈存储引用，堆存储对象
+     *  1.1 个 Thread you且仅有 1 个 ThreadLocalMap 对象。
+     *  2.1 个 Entry 对象的 key 弱引用指向 1 个 ThreadLocal 对象。
+     *  3.1 个 ThreadLocalMap 对象存储多个 Entry 对象。
+     *  4.1 个 ThreadLocal 对象可以被多个线程所共享。
+     *  5.ThreadLocal 对象不持有 Value，Value 由线程的 Entry 对象持有。
      */
     static class ThreadLocalMap {
 
         /**
-         * The entries in this hash map extend WeakReference, using
-         * its main ref field as the key (which is always a
-         * ThreadLocal object).  Note that null keys (i.e. entry.get()
-         * == null) mean that the key is no longer referenced, so the
-         * entry can be expunged from table.  Such entries are referred to
-         * as "stale entries" in the code that follows.
+         * 继承自 WeakReference，没有方法，只有一个 value 成员变量，它的 key 是 ThreadLocal 对象。
+         * 所有 Entry 对象都被 ThreadLocalMap 类实例化对象 threadLocals 持有。
+         * 当线程对象执行完毕时，线程对象内的实例属性均会被垃圾回收。
+         * ThreadLocal 被标识为弱引用，即使线程正在执行中，只要 ThreadLocal 对象引用被置为 null，Entry 的 Key 就会自动在下一次 Young GC 时被垃圾回收。
+         * 理论上当 ThreadLocal 使用 set()、get() 时，会自动将 key = null 的 value 也置为 null，使 Value 也能够自动回收
+         * 但是 ThreadLocal 通常被作为私有静态变量使用，所以他的生命周期不会随着线程的结束而结束，如果 Thread 设置为非静态的，又失去了线程间共享变量的的本质属性。
          */
         static class Entry extends WeakReference<ThreadLocal<?>> {
             /** The value associated with this ThreadLocal. */
@@ -371,12 +281,10 @@ public class ThreadLocal<T> {
         }
 
         /**
-         * Construct a new map including all Inheritable ThreadLocals
-         * from given parent map. Called only by createInheritedMap.
-         *
-         * @param parentMap the map associated with parent thread.
+         * 私有构造方法
          */
         private ThreadLocalMap(ThreadLocalMap parentMap) {
+            // table 就是存储
             Entry[] parentTable = parentMap.table;
             int len = parentTable.length;
             setThreshold(len);

@@ -48,6 +48,10 @@ public class Thread implements Runnable {
 
     /* ThreadLocal values pertaining to this thread. This map is maintained
      * by the ThreadLocal class. */
+    /**
+     * Thread 中的 ThreadLocalMap 属性的赋值是在 ThreadLocal 类中的 createMap 方法中进行的
+     * 所有 Entry 对象都被 threadLocals 持有
+     */
     ThreadLocal.ThreadLocalMap threadLocals = null;
 
     /*
@@ -270,9 +274,10 @@ public class Thread implements Runnable {
                 acc != null ? acc : AccessController.getContext();
         this.target = target;
         setPriority(priority);
+        // parent 代表父线程
+        // 可以把当前线程的变量继续往下传递给它创建的子线程
         if (inheritThreadLocals && parent.inheritableThreadLocals != null)
-            this.inheritableThreadLocals =
-                ThreadLocal.createInheritedMap(parent.inheritableThreadLocals);
+            this.inheritableThreadLocals = ThreadLocal.createInheritedMap(parent.inheritableThreadLocals);
         /* Stash the specified stack size in case the VM cares */
         this.stackSize = stackSize;
 
@@ -593,10 +598,6 @@ public class Thread implements Runnable {
         }
     }
 
-    /**
-     * This method is called by the system to give a Thread
-     * a chance to clean up before it actually exits.
-     */
     private void exit() {
         if (group != null) {
             group.threadTerminated(this);
@@ -612,72 +613,6 @@ public class Thread implements Runnable {
         uncaughtExceptionHandler = null;
     }
 
-    /**
-     * Forces the thread to stop executing.
-     * <p>
-     * If there is a security manager installed, its <code>checkAccess</code>
-     * method is called with <code>this</code>
-     * as its argument. This may result in a
-     * <code>SecurityException</code> being raised (in the current thread).
-     * <p>
-     * If this thread is different from the current thread (that is, the current
-     * thread is trying to stop a thread other than itself), the
-     * security manager's <code>checkPermission</code> method (with a
-     * <code>RuntimePermission("stopThread")</code> argument) is called in
-     * addition.
-     * Again, this may result in throwing a
-     * <code>SecurityException</code> (in the current thread).
-     * <p>
-     * The thread represented by this thread is forced to stop whatever
-     * it is doing abnormally and to throw a newly created
-     * <code>ThreadDeath</code> object as an exception.
-     * <p>
-     * It is permitted to stop a thread that has not yet been started.
-     * If the thread is eventually started, it immediately terminates.
-     * <p>
-     * An application should not normally try to catch
-     * <code>ThreadDeath</code> unless it must do some extraordinary
-     * cleanup operation (note that the throwing of
-     * <code>ThreadDeath</code> causes <code>finally</code> clauses of
-     * <code>try</code> statements to be executed before the thread
-     * officially dies).  If a <code>catch</code> clause catches a
-     * <code>ThreadDeath</code> object, it is important to rethrow the
-     * object so that the thread actually dies.
-     * <p>
-     * The top-level error handler that reacts to otherwise uncaught
-     * exceptions does not print out a message or otherwise notify the
-     * application if the uncaught exception is an instance of
-     * <code>ThreadDeath</code>.
-     *
-     * @exception  SecurityException  if the current thread cannot
-     *               modify this thread.
-     * @see        #interrupt()
-     * @see        #checkAccess()
-     * @see        #run()
-     * @see        #start()
-     * @see        ThreadDeath
-     * @see        ThreadGroup#uncaughtException(Thread,Throwable)
-     * @see        SecurityManager#checkAccess(Thread)
-     * @see        SecurityManager#checkPermission
-     * @deprecated This method is inherently unsafe.  Stopping a thread with
-     *       Thread.stop causes it to unlock all of the monitors that it
-     *       has locked (as a natural consequence of the unchecked
-     *       <code>ThreadDeath</code> exception propagating up the stack).  If
-     *       any of the objects previously protected by these monitors were in
-     *       an inconsistent state, the damaged objects become visible to
-     *       other threads, potentially resulting in arbitrary behavior.  Many
-     *       uses of <code>stop</code> should be replaced by code that simply
-     *       modifies some variable to indicate that the target thread should
-     *       stop running.  The target thread should check this variable
-     *       regularly, and return from its run method in an orderly fashion
-     *       if the variable indicates that it is to stop running.  If the
-     *       target thread waits for long periods (on a condition variable,
-     *       for example), the <code>interrupt</code> method should be used to
-     *       interrupt the wait.
-     *       For more information, see
-     *       <a href="{@docRoot}/../technotes/guides/concurrency/threadPrimitiveDeprecation.html">Why
-     *       are Thread.stop, Thread.suspend and Thread.resume Deprecated?</a>.
-     */
     @Deprecated
     public final void stop() {
         SecurityManager security = System.getSecurityManager();
@@ -687,73 +622,20 @@ public class Thread implements Runnable {
                 security.checkPermission(SecurityConstants.STOP_THREAD_PERMISSION);
             }
         }
-        // A zero status value corresponds to "NEW", it can't change to
-        // not-NEW because we hold the lock.
         if (threadStatus != 0) {
-            resume(); // Wake up thread if it was suspended; no-op otherwise
+            resume();
         }
 
-        // The VM can handle all thread states
         stop0(new ThreadDeath());
     }
 
-    /**
-     * Throws {@code UnsupportedOperationException}.
-     *
-     * @param obj ignored
-     *
-     * @deprecated This method was originally designed to force a thread to stop
-     *        and throw a given {@code Throwable} as an exception. It was
-     *        inherently unsafe (see {@link #stop()} for details), and furthermore
-     *        could be used to generate exceptions that the target thread was
-     *        not prepared to handle.
-     *        For more information, see
-     *        <a href="{@docRoot}/../technotes/guides/concurrency/threadPrimitiveDeprecation.html">Why
-     *        are Thread.stop, Thread.suspend and Thread.resume Deprecated?</a>.
-     */
     @Deprecated
     public final synchronized void stop(Throwable obj) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Interrupts this thread.
-     *
-     * <p> Unless the current thread is interrupting itself, which is
-     * always permitted, the {@link #checkAccess() checkAccess} method
-     * of this thread is invoked, which may cause a {@link
-     * SecurityException} to be thrown.
-     *
-     * <p> If this thread is blocked in an invocation of the {@link
-     * Object#wait() wait()}, {@link Object#wait(long) wait(long)}, or {@link
-     * Object#wait(long, int) wait(long, int)} methods of the {@link Object}
-     * class, or of the {@link #join()}, {@link #join(long)}, {@link
-     * #join(long, int)}, {@link #sleep(long)}, or {@link #sleep(long, int)},
-     * methods of this class, then its interrupt status will be cleared and it
-     * will receive an {@link InterruptedException}.
-     *
-     * <p> If this thread is blocked in an I/O operation upon an {@link
-     * java.nio.channels.InterruptibleChannel InterruptibleChannel}
-     * then the channel will be closed, the thread's interrupt
-     * status will be set, and the thread will receive a {@link
-     * java.nio.channels.ClosedByInterruptException}.
-     *
-     * <p> If this thread is blocked in a {@link java.nio.channels.Selector}
-     * then the thread's interrupt status will be set and it will return
-     * immediately from the selection operation, possibly with a non-zero
-     * value, just as if the selector's {@link
-     * java.nio.channels.Selector#wakeup wakeup} method were invoked.
-     *
-     * <p> If none of the previous conditions hold then this thread's interrupt
-     * status will be set. </p>
-     *
-     * <p> Interrupting a thread that is not alive need not have any effect.
-     *
-     * @throws  SecurityException
-     *          if the current thread cannot modify this thread
-     *
-     * @revised 6.0
-     * @spec JSR-51
+     * 中断线程
      */
     public void interrupt() {
         if (this != Thread.currentThread())

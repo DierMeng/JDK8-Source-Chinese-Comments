@@ -486,43 +486,32 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
                 new SubList<>(this, fromIndex, toIndex));
     }
 
-    // Comparison and hashing
-
     /**
-     * Compares the specified object with this list for equality.  Returns
-     * {@code true} if and only if the specified object is also a list, both
-     * lists have the same size, and all corresponding pairs of elements in
-     * the two lists are <i>equal</i>.  (Two elements {@code e1} and
-     * {@code e2} are <i>equal</i> if {@code (e1==null ? e2==null :
-     * e1.equals(e2))}.)  In other words, two lists are defined to be
-     * equal if they contain the same elements in the same order.<p>
-     *
-     * This implementation first checks if the specified object is this
-     * list. If so, it returns {@code true}; if not, it checks if the
-     * specified object is a list. If not, it returns {@code false}; if so,
-     * it iterates over both lists, comparing corresponding pairs of elements.
-     * If any comparison returns {@code false}, this method returns
-     * {@code false}.  If either iterator runs out of elements before the
-     * other it returns {@code false} (as the lists are of unequal length);
-     * otherwise it returns {@code true} when the iterations complete.
-     *
-     * @param o the object to be compared for equality with this list
-     * @return {@code true} if the specified object is equal to this list
+     * List 集合对象是否相等的判断
      */
     public boolean equals(Object o) {
-        if (o == this)
+
+        if (o == this) {
             return true;
-        if (!(o instanceof List))
+        }
+
+        // 首先进行比较的对象是否为 List 的子类
+        if (!(o instanceof List)) {
             return false;
+        }
 
         ListIterator<E> e1 = listIterator();
         ListIterator<?> e2 = ((List<?>) o).listIterator();
         while (e1.hasNext() && e2.hasNext()) {
             E o1 = e1.next();
             Object o2 = e2.next();
-            if (!(o1==null ? o2==null : o1.equals(o2)))
+            // 如果被比较的对象没有元素，直接返回 false
+            // 如果被比较的对象有元素，则在对应下标进行值得比较
+            if (!(o1==null ? o2==null : o1.equals(o2))) {
                 return false;
+            }
         }
+        // 如果主体对象遍历完，被比较对象还有元素，返回 false
         return !(e1.hasNext() || e2.hasNext());
     }
 

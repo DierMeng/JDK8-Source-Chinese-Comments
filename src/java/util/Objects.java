@@ -1,59 +1,15 @@
-/*
- * Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.util;
 
 import java.util.function.Supplier;
 
-/**
- * This class consists of {@code static} utility methods for operating
- * on objects.  These utilities include {@code null}-safe or {@code
- * null}-tolerant methods for computing the hash code of an object,
- * returning a string for an object, and comparing two objects.
- *
- * @since 1.7
- */
 public final class Objects {
     private Objects() {
         throw new AssertionError("No java.util.Objects instances for you!");
     }
 
     /**
-     * Returns {@code true} if the arguments are equal to each other
-     * and {@code false} otherwise.
-     * Consequently, if both arguments are {@code null}, {@code true}
-     * is returned and if exactly one argument is {@code null}, {@code
-     * false} is returned.  Otherwise, equality is determined by using
-     * the {@link Object#equals equals} method of the first
-     * argument.
-     *
-     * @param a an object
-     * @param b an object to be compared with {@code a} for equality
-     * @return {@code true} if the arguments are equal to each other
-     * and {@code false} otherwise
-     * @see Object#equals(Object)
+     * 推荐使用此方法判断两个对象是否相等
+     * 尽量避免通过实例对象引用来调用 equals 方法，否则容易抛出 NPE 空指针异常问题
      */
     public static boolean equals(Object a, Object b) {
         return (a == b) || (a != null && a.equals(b));

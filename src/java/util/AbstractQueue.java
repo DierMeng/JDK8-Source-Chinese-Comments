@@ -61,9 +61,7 @@ package java.util;
  * @author Doug Lea
  * @param <E> the type of elements held in this collection
  */
-public abstract class AbstractQueue<E>
-    extends AbstractCollection<E>
-    implements Queue<E> {
+public abstract class AbstractQueue<E> extends AbstractCollection<E> implements Queue<E> {
 
     /**
      * Constructor for use by subclasses.

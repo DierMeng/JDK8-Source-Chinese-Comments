@@ -654,7 +654,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 
     /**
      *  线程池关闭的思路：
-     *      遍历线程池紫红的工作线程
+     *      遍历线程池中的工作线程
      *      逐个调用线程的 interrupt 方法来中断线程
      *      无法响应中断的任务可能永远无法终止
      *  只是将线程池的状态设置成 SHUTDOWN（不再接受新任务，但可以继续执行队列中的任务） 状态，然后中断所有没有正在执行任务的线程

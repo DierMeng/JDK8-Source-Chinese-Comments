@@ -152,14 +152,7 @@ import sun.util.locale.provider.LocaleServiceProviderPool;
 public abstract class DateFormat extends Format {
 
     /**
-     * The {@link Calendar} instance used for calculating the date-time fields
-     * and the instant of time. This field is used for both formatting and
-     * parsing.
-     *
-     * <p>Subclasses should initialize this field to a {@link Calendar}
-     * appropriate for the {@link Locale} associated with this
-     * <code>DateFormat</code>.
-     * @serial
+     * 在日期转字符串或者字符串转日期的过程中，多线程共享时有非常高的概率产生错误，推荐使用 ThreadLocal，让每个线程单独拥有这个对象
      */
     protected Calendar calendar;
 

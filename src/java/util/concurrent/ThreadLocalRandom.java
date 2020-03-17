@@ -1,38 +1,3 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent;
 
 import java.io.ObjectStreamField;
@@ -50,81 +15,10 @@ import java.util.stream.StreamSupport;
 import sun.misc.VM;
 
 /**
- * A random number generator isolated to the current thread.  Like the
- * global {@link java.util.Random} generator used by the {@link
- * java.lang.Math} class, a {@code ThreadLocalRandom} is initialized
- * with an internally generated seed that may not otherwise be
- * modified. When applicable, use of {@code ThreadLocalRandom} rather
- * than shared {@code Random} objects in concurrent programs will
- * typically encounter much less overhead and contention.  Use of
- * {@code ThreadLocalRandom} is particularly appropriate when multiple
- * tasks (for example, each a {@link ForkJoinTask}) use random numbers
- * in parallel in thread pools.
- *
- * <p>Usages of this class should typically be of the form:
- * {@code ThreadLocalRandom.current().nextX(...)} (where
- * {@code X} is {@code Int}, {@code Long}, etc).
- * When all usages are of this form, it is never possible to
- * accidently share a {@code ThreadLocalRandom} across multiple threads.
- *
- * <p>This class also provides additional commonly used bounded random
- * generation methods.
- *
- * <p>Instances of {@code ThreadLocalRandom} are not cryptographically
- * secure.  Consider instead using {@link java.security.SecureRandom}
- * in security-sensitive applications. Additionally,
- * default-constructed instances do not use a cryptographically random
- * seed unless the {@linkplain System#getProperty system property}
- * {@code java.util.secureRandomSeed} is set to {@code true}.
- *
- * @since 1.7
- * @author Doug Lea
+ * JDK7 引入
+ * 使得每个线程都可以有自己的随机数生成器
  */
 public class ThreadLocalRandom extends Random {
-    /*
-     * This class implements the java.util.Random API (and subclasses
-     * Random) using a single static instance that accesses random
-     * number state held in class Thread (primarily, field
-     * threadLocalRandomSeed). In doing so, it also provides a home
-     * for managing package-private utilities that rely on exactly the
-     * same state as needed to maintain the ThreadLocalRandom
-     * instances. We leverage the need for an initialization flag
-     * field to also use it as a "probe" -- a self-adjusting thread
-     * hash used for contention avoidance, as well as a secondary
-     * simpler (xorShift) random seed that is conservatively used to
-     * avoid otherwise surprising users by hijacking the
-     * ThreadLocalRandom sequence.  The dual use is a marriage of
-     * convenience, but is a simple and efficient way of reducing
-     * application-level overhead and footprint of most concurrent
-     * programs.
-     *
-     * Even though this class subclasses java.util.Random, it uses the
-     * same basic algorithm as java.util.SplittableRandom.  (See its
-     * internal documentation for explanations, which are not repeated
-     * here.)  Because ThreadLocalRandoms are not splittable
-     * though, we use only a single 64bit gamma.
-     *
-     * Because this class is in a different package than class Thread,
-     * field access methods use Unsafe to bypass access control rules.
-     * To conform to the requirements of the Random superclass
-     * constructor, the common static ThreadLocalRandom maintains an
-     * "initialized" field for the sake of rejecting user calls to
-     * setSeed while still allowing a call from constructor.  Note
-     * that serialization is completely unnecessary because there is
-     * only a static singleton.  But we generate a serial form
-     * containing "rnd" and "initialized" fields to ensure
-     * compatibility across versions.
-     *
-     * Implementations of non-core methods are mostly the same as in
-     * SplittableRandom, that were in part derived from a previous
-     * version of this class.
-     *
-     * The nextLocalGaussian ThreadLocal supports the very rarely used
-     * nextGaussian method by providing a holder for the second of a
-     * pair of them. As is true for the base class version of this
-     * method, this time/space tradeoff is probably never worthwhile,
-     * but we provide identical statistical properties.
-     */
 
     /** Generates per-thread initialization/probe field */
     private static final AtomicInteger probeGenerator =
