@@ -135,32 +135,7 @@ public class Semaphore implements java.io.Serializable {
     }
 
     /**
-     * Acquires a permit from this semaphore, blocking until one is
-     * available, or the thread is {@linkplain Thread#interrupt interrupted}.
-     *
-     * <p>Acquires a permit, if one is available and returns immediately,
-     * reducing the number of available permits by one.
-     *
-     * <p>If no permit is available then the current thread becomes
-     * disabled for thread scheduling purposes and lies dormant until
-     * one of two things happens:
-     * <ul>
-     * <li>Some other thread invokes the {@link #release} method for this
-     * semaphore and the current thread is next to be assigned a permit; or
-     * <li>Some other thread {@linkplain Thread#interrupt interrupts}
-     * the current thread.
-     * </ul>
-     *
-     * <p>If the current thread:
-     * <ul>
-     * <li>has its interrupted status set on entry to this method; or
-     * <li>is {@linkplain Thread#interrupt interrupted} while waiting
-     * for a permit,
-     * </ul>
-     * then {@link InterruptedException} is thrown and the current thread's
-     * interrupted status is cleared.
-     *
-     * @throws InterruptedException if the current thread is interrupted
+     * 只有在调用该方法成功之后，才可以继续往下执行
      */
     public void acquire() throws InterruptedException {
         sync.acquireSharedInterruptibly(1);
@@ -264,17 +239,8 @@ public class Semaphore implements java.io.Serializable {
     }
 
     /**
-     * Releases a permit, returning it to the semaphore.
-     *
-     * <p>Releases a permit, increasing the number of available permits by
-     * one.  If any threads are trying to acquire a permit, then one is
-     * selected and given the permit that was just released.  That thread
-     * is (re)enabled for thread scheduling purposes.
-     *
-     * <p>There is no requirement that a thread that releases a permit must
-     * have acquired that permit by calling {@link #acquire}.
-     * Correct usage of a semaphore is established by programming convention
-     * in the application.
+     * acquire 执行完成后，执行该方法释放持有的信号量
+     * 下一个线程就可以马上获取这个空闲信号量进入执行
      */
     public void release() {
         sync.releaseShared(1);

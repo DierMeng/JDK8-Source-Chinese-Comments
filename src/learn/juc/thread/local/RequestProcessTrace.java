@@ -1,4 +1,4 @@
-package learn.juc;
+package learn.juc.thread.local;
 
 /**
  * ThreadLocal 和 InheritableThreadLocal 透传全局上下文示例

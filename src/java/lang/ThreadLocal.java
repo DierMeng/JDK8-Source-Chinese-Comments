@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 
 /**
  * 传递线程内变量，可用来透传全局上下文
+ * 通常用于同一个线程内，跨类、跨方法传递数据
  */
 public class ThreadLocal<T> {
     /**
@@ -199,7 +200,7 @@ public class ThreadLocal<T> {
 
     /**
      * 栈存储引用，堆存储对象
-     *  1.1 个 Thread you且仅有 1 个 ThreadLocalMap 对象。
+     *  1.1 个 Thread 有且仅有 1 个 ThreadLocalMap 对象。
      *  2.1 个 Entry 对象的 key 弱引用指向 1 个 ThreadLocal 对象。
      *  3.1 个 ThreadLocalMap 对象存储多个 Entry 对象。
      *  4.1 个 ThreadLocal 对象可以被多个线程所共享。

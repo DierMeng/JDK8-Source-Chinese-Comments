@@ -95,7 +95,9 @@ public class CopyOnWriteArrayList<E> implements List<E>, RandomAccess, Cloneable
     /** The lock protecting all mutators */
     final transient ReentrantLock lock = new ReentrantLock();
 
-    /** The array, accessed only via getArray/setArray. */
+    /**
+     * 集合真正存储元素的数组
+     */
     private transient volatile Object[] array;
 
     /**

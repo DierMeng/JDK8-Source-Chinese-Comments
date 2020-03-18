@@ -1,4 +1,4 @@
-package learn.juc;
+package learn.juc.thread.local;
 
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
