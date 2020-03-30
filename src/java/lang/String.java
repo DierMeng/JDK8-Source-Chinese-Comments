@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 1994, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.lang;
 
 import java.io.ObjectStreamField;
@@ -108,8 +83,7 @@ import java.util.regex.PatternSyntaxException;
  * @since   JDK1.0
  */
 
-public final class String
-    implements java.io.Serializable, Comparable<String>, CharSequence {
+public final class String implements java.io.Serializable, Comparable<String>, CharSequence {
     /** The value is used for character storage. */
     private final char value[];
 
@@ -3142,27 +3116,13 @@ public final class String
     }
 
     /**
-     * Returns a canonical representation for the string object.
-     * <p>
-     * A pool of strings, initially empty, is maintained privately by the
-     * class {@code String}.
-     * <p>
-     * When the intern method is invoked, if the pool already contains a
-     * string equal to this {@code String} object as determined by
-     * the {@link #equals(Object)} method, then the string from the pool is
-     * returned. Otherwise, this {@code String} object is added to the
-     * pool and a reference to this {@code String} object is returned.
-     * <p>
-     * It follows that for any two strings {@code s} and {@code t},
-     * {@code s.intern() == t.intern()} is {@code true}
-     * if and only if {@code s.equals(t)} is {@code true}.
-     * <p>
-     * All literal strings and string-valued constant expressions are
-     * interned. String literals are defined in section 3.10.5 of the
-     * <cite>The Java&trade; Language Specification</cite>.
+     * 一个 native 的方法
+     * 如果常量池中存在当前字符串, 就会直接返回当前字符串.
+     * 如果常量池中没有此字符串, 会将此字符串放入常量池中后, 再返回;
      *
-     * @return  a string that has the same contents as this string, but is
-     *          guaranteed to be from a pool of unique strings.
+     * 常见的面试题：
+     * String s = new String("abc"); 这个语句创建了几个对象？
+     * 创建了 2 个对象，第一个对象是「abc」字符串存储在常量池中，第二个对象在 JAVA Heap 中的 String 对象。
      */
     public native String intern();
 }

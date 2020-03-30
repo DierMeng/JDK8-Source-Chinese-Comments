@@ -1,38 +1,3 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea and Martin Buchholz with assistance from members of
- * JCP JSR-166 Expert Group and released to the public domain, as explained
- * at http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent;
 
 import java.util.AbstractQueue;
@@ -46,136 +11,17 @@ import java.util.Spliterators;
 import java.util.function.Consumer;
 
 /**
- * An unbounded thread-safe {@linkplain Queue queue} based on linked nodes.
- * This queue orders elements FIFO (first-in-first-out).
- * The <em>head</em> of the queue is that element that has been on the
- * queue the longest time.
- * The <em>tail</em> of the queue is that element that has been on the
- * queue the shortest time. New elements
- * are inserted at the tail of the queue, and the queue retrieval
- * operations obtain elements at the head of the queue.
- * A {@code ConcurrentLinkedQueue} is an appropriate choice when
- * many threads will share access to a common collection.
- * Like most other concurrent collection implementations, this class
- * does not permit the use of {@code null} elements.
+ * 提供了比 synchronized 机制更高的性能和可伸缩性。
  *
- * <p>This implementation employs an efficient <em>non-blocking</em>
- * algorithm based on one described in <a
- * href="http://www.cs.rochester.edu/u/michael/PODC96.html"> Simple,
- * Fast, and Practical Non-Blocking and Blocking Concurrent Queue
- * Algorithms</a> by Maged M. Michael and Michael L. Scott.
+ * 非阻塞链接队列算法
+ * 空队列通常都包含一个「哨兵节点」或者叫「哑节点」，并且头节点和尾节点在初始化时都指向该哨兵节点。
+ * 尾节点通常要么指向哨兵节点（队列为空时），要么指向倒数第二个元素（有操作正在执行更新）
  *
- * <p>Iterators are <i>weakly consistent</i>, returning elements
- * reflecting the state of the queue at some point at or since the
- * creation of the iterator.  They do <em>not</em> throw {@link
- * java.util.ConcurrentModificationException}, and may proceed concurrently
- * with other operations.  Elements contained in the queue since the creation
- * of the iterator will be returned exactly once.
- *
- * <p>Beware that, unlike in most collections, the {@code size} method
- * is <em>NOT</em> a constant-time operation. Because of the
- * asynchronous nature of these queues, determining the current number
- * of elements requires a traversal of the elements, and so may report
- * inaccurate results if this collection is modified during traversal.
- * Additionally, the bulk operations {@code addAll},
- * {@code removeAll}, {@code retainAll}, {@code containsAll},
- * {@code equals}, and {@code toArray} are <em>not</em> guaranteed
- * to be performed atomically. For example, an iterator operating
- * concurrently with an {@code addAll} operation might view only some
- * of the added elements.
- *
- * <p>This class and its iterator implement all of the <em>optional</em>
- * methods of the {@link Queue} and {@link Iterator} interfaces.
- *
- * <p>Memory consistency effects: As with other concurrent
- * collections, actions in a thread prior to placing an object into a
- * {@code ConcurrentLinkedQueue}
- * <a href="package-summary.html#MemoryVisibility"><i>happen-before</i></a>
- * actions subsequent to the access or removal of that element from
- * the {@code ConcurrentLinkedQueue} in another thread.
- *
- * <p>This class is a member of the
- * <a href="{@docRoot}/../technotes/guides/collections/index.html">
- * Java Collections Framework</a>.
- *
- * @since 1.5
- * @author Doug Lea
- * @param <E> the type of elements held in this collection
+ * 没有使用原子引用来表示每个 Node，使用普通的 volatile 类型引用，通过基于反射的 AtomicReferenceFieldUpdater 原子的域更新器类进行更新
  */
-public class ConcurrentLinkedQueue<E> extends AbstractQueue<E>
-        implements Queue<E>, java.io.Serializable {
-    private static final long serialVersionUID = 196745693267521676L;
+public class ConcurrentLinkedQueue<E> extends AbstractQueue<E> implements Queue<E>, java.io.Serializable {
 
-    /*
-     * This is a modification of the Michael & Scott algorithm,
-     * adapted for a garbage-collected environment, with support for
-     * interior node deletion (to support remove(Object)).  For
-     * explanation, read the paper.
-     *
-     * Note that like most non-blocking algorithms in this package,
-     * this implementation relies on the fact that in garbage
-     * collected systems, there is no possibility of ABA problems due
-     * to recycled nodes, so there is no need to use "counted
-     * pointers" or related techniques seen in versions used in
-     * non-GC'ed settings.
-     *
-     * The fundamental invariants are:
-     * - There is exactly one (last) Node with a null next reference,
-     *   which is CASed when enqueueing.  This last Node can be
-     *   reached in O(1) time from tail, but tail is merely an
-     *   optimization - it can always be reached in O(N) time from
-     *   head as well.
-     * - The elements contained in the queue are the non-null items in
-     *   Nodes that are reachable from head.  CASing the item
-     *   reference of a Node to null atomically removes it from the
-     *   queue.  Reachability of all elements from head must remain
-     *   true even in the case of concurrent modifications that cause
-     *   head to advance.  A dequeued Node may remain in use
-     *   indefinitely due to creation of an Iterator or simply a
-     *   poll() that has lost its time slice.
-     *
-     * The above might appear to imply that all Nodes are GC-reachable
-     * from a predecessor dequeued Node.  That would cause two problems:
-     * - allow a rogue Iterator to cause unbounded memory retention
-     * - cause cross-generational linking of old Nodes to new Nodes if
-     *   a Node was tenured while live, which generational GCs have a
-     *   hard time dealing with, causing repeated major collections.
-     * However, only non-deleted Nodes need to be reachable from
-     * dequeued Nodes, and reachability does not necessarily have to
-     * be of the kind understood by the GC.  We use the trick of
-     * linking a Node that has just been dequeued to itself.  Such a
-     * self-link implicitly means to advance to head.
-     *
-     * Both head and tail are permitted to lag.  In fact, failing to
-     * update them every time one could is a significant optimization
-     * (fewer CASes). As with LinkedTransferQueue (see the internal
-     * documentation for that class), we use a slack threshold of two;
-     * that is, we update head/tail when the current pointer appears
-     * to be two or more steps away from the first/last node.
-     *
-     * Since head and tail are updated concurrently and independently,
-     * it is possible for tail to lag behind head (why not)?
-     *
-     * CASing a Node's item reference to null atomically removes the
-     * element from the queue.  Iterators skip over Nodes with null
-     * items.  Prior implementations of this class had a race between
-     * poll() and remove(Object) where the same element would appear
-     * to be successfully removed by two concurrent operations.  The
-     * method remove(Object) also lazily unlinks deleted Nodes, but
-     * this is merely an optimization.
-     *
-     * When constructing a Node (before enqueuing it) we avoid paying
-     * for a volatile write to item by using Unsafe.putObject instead
-     * of a normal write.  This allows the cost of enqueue to be
-     * "one-and-a-half" CASes.
-     *
-     * Both head and tail may or may not point to a Node with a
-     * non-null item.  If the queue is empty, all items must of course
-     * be null.  Upon creation, both head and tail refer to a dummy
-     * Node with null item.  Both head and tail are only updated using
-     * CAS, so they never regress, although again this is merely an
-     * optimization.
-     */
+    private static final long serialVersionUID = 196745693267521676L;
 
     private static class Node<E> {
         volatile E item;

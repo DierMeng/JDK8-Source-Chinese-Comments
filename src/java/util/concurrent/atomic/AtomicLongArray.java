@@ -1,49 +1,10 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent.atomic;
 import java.util.function.LongUnaryOperator;
 import java.util.function.LongBinaryOperator;
 import sun.misc.Unsafe;
 
 /**
- * A {@code long} array in which elements may be updated atomically.
- * See the {@link java.util.concurrent.atomic} package specification
- * for description of the properties of atomic variables.
- * @since 1.5
- * @author Doug Lea
+ * 原子变量类之数组类
  */
 public class AtomicLongArray implements java.io.Serializable {
     private static final long serialVersionUID = -2308431214976778248L;

@@ -1,38 +1,3 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent.atomic;
 
 import java.lang.reflect.Field;
@@ -47,40 +12,7 @@ import sun.reflect.CallerSensitive;
 import sun.reflect.Reflection;
 
 /**
- * A reflection-based utility that enables atomic updates to
- * designated {@code volatile} reference fields of designated
- * classes.  This class is designed for use in atomic data structures
- * in which several reference fields of the same node are
- * independently subject to atomic updates. For example, a tree node
- * might be declared as
- *
- * <pre> {@code
- * class Node {
- *   private volatile Node left, right;
- *
- *   private static final AtomicReferenceFieldUpdater<Node, Node> leftUpdater =
- *     AtomicReferenceFieldUpdater.newUpdater(Node.class, Node.class, "left");
- *   private static AtomicReferenceFieldUpdater<Node, Node> rightUpdater =
- *     AtomicReferenceFieldUpdater.newUpdater(Node.class, Node.class, "right");
- *
- *   Node getLeft() { return left; }
- *   boolean compareAndSetLeft(Node expect, Node update) {
- *     return leftUpdater.compareAndSet(this, expect, update);
- *   }
- *   // ... and so on
- * }}</pre>
- *
- * <p>Note that the guarantees of the {@code compareAndSet}
- * method in this class are weaker than in other atomic classes.
- * Because this class cannot ensure that all uses of the field
- * are appropriate for purposes of atomic access, it can
- * guarantee atomicity only with respect to other invocations of
- * {@code compareAndSet} and {@code set} on the same updater.
- *
- * @since 1.5
- * @author Doug Lea
- * @param <T> The type of the object holding the updatable field
- * @param <V> The type of the field
+ * 原子变量类之更新器类
  */
 public abstract class AtomicReferenceFieldUpdater<T,V> {
 

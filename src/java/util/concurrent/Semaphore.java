@@ -2,6 +2,9 @@ package java.util.concurrent;
 import java.util.Collection;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
+/**
+ * 提供了比 synchronized 机制更高的性能和可伸缩性
+ */
 public class Semaphore implements java.io.Serializable {
     private static final long serialVersionUID = -3222578661600680210L;
     /** All mechanics via AbstractQueuedSynchronizer subclass */

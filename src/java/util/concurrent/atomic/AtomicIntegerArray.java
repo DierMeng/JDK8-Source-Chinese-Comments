@@ -39,12 +39,7 @@ import java.util.function.IntBinaryOperator;
 import sun.misc.Unsafe;
 
 /**
- * An {@code int} array in which elements may be updated atomically.
- * See the {@link java.util.concurrent.atomic} package
- * specification for description of the properties of atomic
- * variables.
- * @since 1.5
- * @author Doug Lea
+ * 原子变量类之数组类
  */
 public class AtomicIntegerArray implements java.io.Serializable {
     private static final long serialVersionUID = 2862133569453604235L;

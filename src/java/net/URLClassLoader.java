@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.net;
 
 import java.io.Closeable;
@@ -56,20 +31,7 @@ import sun.net.www.ParseUtil;
 import sun.security.util.SecurityConstants;
 
 /**
- * This class loader is used to load classes and resources from a search
- * path of URLs referring to both JAR files and directories. Any URL that
- * ends with a '/' is assumed to refer to a directory. Otherwise, the URL
- * is assumed to refer to a JAR file which will be opened as needed.
- * <p>
- * The AccessControlContext of the thread that created the instance of
- * URLClassLoader will be used when subsequently loading classes and
- * resources.
- * <p>
- * The classes that are loaded are by default granted permission only to
- * access the URLs specified when the URLClassLoader was created.
- *
- * @author  David Connelly
- * @since   1.2
+ * 介于扩展类加载器和根类加载器之间，主要负责的就是从文件系统或者网络传输中获取二进制 class 文件来加载类
  */
 public class URLClassLoader extends SecureClassLoader implements Closeable {
     /* The search path for classes and resources */
@@ -79,23 +41,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
     private final AccessControlContext acc;
 
     /**
-     * Constructs a new URLClassLoader for the given URLs. The URLs will be
-     * searched in the order specified for classes and resources after first
-     * searching in the specified parent class loader. Any URL that ends with
-     * a '/' is assumed to refer to a directory. Otherwise, the URL is assumed
-     * to refer to a JAR file which will be downloaded and opened as needed.
-     *
-     * <p>If there is a security manager, this method first
-     * calls the security manager's {@code checkCreateClassLoader} method
-     * to ensure creation of a class loader is allowed.
-     *
-     * @param urls the URLs from which to load classes and resources
-     * @param parent the parent class loader for delegation
-     * @exception  SecurityException  if a security manager exists and its
-     *             {@code checkCreateClassLoader} method doesn't allow
-     *             creation of a class loader.
-     * @exception  NullPointerException if {@code urls} is {@code null}.
-     * @see SecurityManager#checkCreateClassLoader
+     * 使用指定的父类加载器创建一个 ClassLoader 对象
      */
     public URLClassLoader(URL[] urls, ClassLoader parent) {
         super(parent);
@@ -121,25 +67,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
     }
 
     /**
-     * Constructs a new URLClassLoader for the specified URLs using the
-     * default delegation parent {@code ClassLoader}. The URLs will
-     * be searched in the order specified for classes and resources after
-     * first searching in the parent class loader. Any URL that ends with
-     * a '/' is assumed to refer to a directory. Otherwise, the URL is
-     * assumed to refer to a JAR file which will be downloaded and opened
-     * as needed.
-     *
-     * <p>If there is a security manager, this method first
-     * calls the security manager's {@code checkCreateClassLoader} method
-     * to ensure creation of a class loader is allowed.
-     *
-     * @param urls the URLs from which to load classes and resources
-     *
-     * @exception  SecurityException  if a security manager exists and its
-     *             {@code checkCreateClassLoader} method doesn't allow
-     *             creation of a class loader.
-     * @exception  NullPointerException if {@code urls} is {@code null}.
-     * @see SecurityManager#checkCreateClassLoader
+     * 使用默认的父类加载器创建一个 ClassLoader 对象,该对象将从 urls 所指定的系列路径来查询并加载类
      */
     public URLClassLoader(URL[] urls) {
         super();

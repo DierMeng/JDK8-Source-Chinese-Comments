@@ -41,13 +41,7 @@ import java.lang.reflect.Array;
 import sun.misc.Unsafe;
 
 /**
- * An array of object references in which elements may be updated
- * atomically.  See the {@link java.util.concurrent.atomic} package
- * specification for description of the properties of atomic
- * variables.
- * @since 1.5
- * @author Doug Lea
- * @param <E> The base class of elements held in this array
+ * 原子变量类之数组类
  */
 public class AtomicReferenceArray<E> implements java.io.Serializable {
     private static final long serialVersionUID = -6209656149925076980L;

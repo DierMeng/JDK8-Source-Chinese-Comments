@@ -1,51 +1,8 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent.atomic;
 
 /**
- * An {@code AtomicMarkableReference} maintains an object reference
- * along with a mark bit, that can be updated atomically.
- *
- * <p>Implementation note: This implementation maintains markable
- * references by creating internal objects representing "boxed"
- * [reference, boolean] pairs.
- *
- * @since 1.5
- * @author Doug Lea
- * @param <V> The type of object referred to by this reference
+ * 支持在两个变量上执行原子的条件更新
+ * 更新一个「对象 - 布尔值」二元组，使节点保存在链表中同时又将其标记为「已删除的节点」
  */
 public class AtomicMarkableReference<V> {
 

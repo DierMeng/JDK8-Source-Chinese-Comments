@@ -1,51 +1,8 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent.atomic;
 
 /**
- * An {@code AtomicStampedReference} maintains an object reference
- * along with an integer "stamp", that can be updated atomically.
- *
- * <p>Implementation note: This implementation maintains stamped
- * references by creating internal objects representing "boxed"
- * [reference, integer] pairs.
- *
- * @since 1.5
- * @author Doug Lea
- * @param <V> The type of object referred to by this reference
+ * 支持在两个变量上执行原子的条件更新
+ * 更新一个「对象 - 引用」二元组，通过在引用上加上「版本号」，从而避免 ABA 问题
  */
 public class AtomicStampedReference<V> {
 

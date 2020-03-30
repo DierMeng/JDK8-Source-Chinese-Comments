@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 1994, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.lang;
 
 import java.lang.annotation.Native;
@@ -766,26 +741,19 @@ public final class Integer extends Number implements Comparable<Integer> {
     }
 
     /**
-     * Cache to support the object identity semantics of autoboxing for values between
-     * -128 and 127 (inclusive) as required by JLS.
-     *
-     * The cache is initialized on first usage.  The size of the cache
-     * may be controlled by the {@code -XX:AutoBoxCacheMax=<size>} option.
-     * During VM initialization, java.lang.Integer.IntegerCache.high property
-     * may be set and saved in the private system properties in the
-     * sun.misc.VM class.
+     * 把一个 -128~127 之间的整数自动装箱，并放入到 cache 中缓存起来，以外的整数系统就会总是重新创建一个 Integer 实例
+     * 内部静态类，该类只能在Integer这个类的内部访问
+     * 这个类在初始化的时候，会去加载 JVM 的配置，如果有值，就用配置的值初始化缓存数组，否则就缓存 -128 到 127 之间的值
      */
-
     private static class IntegerCache {
         static final int low = -128;
         static final int high;
         static final Integer cache[];
 
         static {
-            // high value may be configured by property
+            // 检查虚拟机里是否有缓存区间配置项，如果有就赋成该值，没有就默认[-128, 127]
             int h = 127;
-            String integerCacheHighPropValue =
-                sun.misc.VM.getSavedProperty("java.lang.Integer.IntegerCache.high");
+            String integerCacheHighPropValue = sun.misc.VM.getSavedProperty("java.lang.Integer.IntegerCache.high");
             if (integerCacheHighPropValue != null) {
                 try {
                     int i = parseInt(integerCacheHighPropValue);
@@ -798,6 +766,7 @@ public final class Integer extends Number implements Comparable<Integer> {
             }
             high = h;
 
+            // 创建缓存数组，并初始化（缓存值）
             cache = new Integer[(high - low) + 1];
             int j = low;
             for(int k = 0; k < cache.length; k++)
@@ -812,22 +781,14 @@ public final class Integer extends Number implements Comparable<Integer> {
 
     /**
      * Returns an {@code Integer} instance representing the specified
-     * {@code int} value.  If a new {@code Integer} instance is not
-     * required, this method should generally be used in preference to
-     * the constructor {@link #Integer(int)}, as this method is likely
-     * to yield significantly better space and time performance by
-     * caching frequently requested values.
-     *
-     * This method will always cache values in the range -128 to 127,
-     * inclusive, and may cache other values outside of this range.
-     *
-     * @param  i an {@code int} value.
-     * @return an {@code Integer} instance representing {@code i}.
-     * @since  1.5
      */
     public static Integer valueOf(int i) {
-        if (i >= IntegerCache.low && i <= IntegerCache.high)
+        // 先查询缓存，在缓存区间就返回缓存里的
+        if (i >= IntegerCache.low && i <= IntegerCache.high) {
+            // 缓存数组相应的对象
             return IntegerCache.cache[i + (-IntegerCache.low)];
+        }
+        // 不在缓存数组区间就 new 一个对象
         return new Integer(i);
     }
 

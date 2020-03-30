@@ -390,9 +390,7 @@ public final class Class<T> implements java.io.Serializable,
      *          of this class.
      */
     @CallerSensitive
-    public T newInstance()
-        throws InstantiationException, IllegalAccessException
-    {
+    public T newInstance() throws InstantiationException, IllegalAccessException {
         if (System.getSecurityManager() != null) {
             checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), false);
         }
