@@ -1,38 +1,3 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent;
 
 import java.util.AbstractQueue;
@@ -47,43 +12,7 @@ import java.util.Spliterators;
 import java.util.function.Consumer;
 
 /**
- * An unbounded {@link TransferQueue} based on linked nodes.
- * This queue orders elements FIFO (first-in-first-out) with respect
- * to any given producer.  The <em>head</em> of the queue is that
- * element that has been on the queue the longest time for some
- * producer.  The <em>tail</em> of the queue is that element that has
- * been on the queue the shortest time for some producer.
- *
- * <p>Beware that, unlike in most collections, the {@code size} method
- * is <em>NOT</em> a constant-time operation. Because of the
- * asynchronous nature of these queues, determining the current number
- * of elements requires a traversal of the elements, and so may report
- * inaccurate results if this collection is modified during traversal.
- * Additionally, the bulk operations {@code addAll},
- * {@code removeAll}, {@code retainAll}, {@code containsAll},
- * {@code equals}, and {@code toArray} are <em>not</em> guaranteed
- * to be performed atomically. For example, an iterator operating
- * concurrently with an {@code addAll} operation might view only some
- * of the added elements.
- *
- * <p>This class and its iterator implement all of the
- * <em>optional</em> methods of the {@link Collection} and {@link
- * Iterator} interfaces.
- *
- * <p>Memory consistency effects: As with other concurrent
- * collections, actions in a thread prior to placing an object into a
- * {@code LinkedTransferQueue}
- * <a href="package-summary.html#MemoryVisibility"><i>happen-before</i></a>
- * actions subsequent to the access or removal of that element from
- * the {@code LinkedTransferQueue} in another thread.
- *
- * <p>This class is a member of the
- * <a href="{@docRoot}/../technotes/guides/collections/index.html">
- * Java Collections Framework</a>.
- *
- * @since 1.7
- * @author Doug Lea
- * @param <E> the type of elements held in this collection
+ * 一个由链表结构组成的无界阻塞队列
  */
 public class LinkedTransferQueue<E> extends AbstractQueue<E>
     implements TransferQueue<E>, java.io.Serializable {

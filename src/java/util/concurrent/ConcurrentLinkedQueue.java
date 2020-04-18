@@ -11,6 +11,7 @@ import java.util.Spliterators;
 import java.util.function.Consumer;
 
 /**
+ * 并发队列
  * 提供了比 synchronized 机制更高的性能和可伸缩性。
  *
  * 非阻塞链接队列算法

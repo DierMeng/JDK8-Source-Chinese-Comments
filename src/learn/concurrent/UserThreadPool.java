@@ -1,4 +1,4 @@
-package com.glorze.concurrent;
+package learn.concurrent;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;

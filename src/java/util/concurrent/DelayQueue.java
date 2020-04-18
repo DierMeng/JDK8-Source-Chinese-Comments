@@ -5,32 +5,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.*;
 
 /**
- * An unbounded {@linkplain BlockingQueue blocking queue} of
- * {@code Delayed} elements, in which an element can only be taken
- * when its delay has expired.  The <em>head</em> of the queue is that
- * {@code Delayed} element whose delay expired furthest in the
- * past.  If no delay has expired there is no head and {@code poll}
- * will return {@code null}. Expiration occurs when an element's
- * {@code getDelay(TimeUnit.NANOSECONDS)} method returns a value less
- * than or equal to zero.  Even though unexpired elements cannot be
- * removed using {@code take} or {@code poll}, they are otherwise
- * treated as normal elements. For example, the {@code size} method
- * returns the count of both expired and unexpired elements.
- * This queue does not permit null elements.
- *
- * <p>This class and its iterator implement all of the
- * <em>optional</em> methods of the {@link Collection} and {@link
- * Iterator} interfaces.  The Iterator provided in method {@link
- * #iterator()} is <em>not</em> guaranteed to traverse the elements of
- * the DelayQueue in any particular order.
- *
- * <p>This class is a member of the
- * <a href="{@docRoot}/../technotes/guides/collections/index.html">
- * Java Collections Framework</a>.
- *
- * @since 1.5
- * @author Doug Lea
- * @param <E> the type of elements held in this collection
+ * 一个使用优先级队列实现的无界阻塞队列
  */
 public class DelayQueue<E extends Delayed> extends AbstractQueue<E> implements BlockingQueue<E> {
 

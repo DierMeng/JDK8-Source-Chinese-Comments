@@ -2,8 +2,14 @@ package java.util.concurrent.locks;
 import java.util.concurrent.TimeUnit;
 import java.util.Collection;
 
-public class ReentrantReadWriteLock
-        implements ReadWriteLock, java.io.Serializable {
+/**
+ * Sync 的内部类继承了 AQS，AQS 的队列可以同时存放共享锁和独占锁，
+ * 对于 ReentrantReadWriteLock 来说分别代表读锁和写锁，
+ * 当队列中的头节点为读锁时，代表读操作可以执行，而写操作不能执行，因此请求写操作的线程会被挂起，
+ * 当读操作依次退出后，写锁成为头节点，请求写操作的线程被唤醒，可以执行写操作，而此时的读请求将被封装成 Node 放入 AQS 的队列中。
+ * 如此往复，实现读写锁的读写交替进行。
+ */
+public class ReentrantReadWriteLock implements ReadWriteLock, java.io.Serializable {
     private static final long serialVersionUID = -6992448646407690164L;
     /** Inner class providing readlock */
     private final ReentrantReadWriteLock.ReadLock readerLock;

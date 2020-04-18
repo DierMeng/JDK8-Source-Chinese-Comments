@@ -4,7 +4,15 @@ import java.util.Collection;
 
 /**
  * 可重入锁：可重复可递归调用的锁，在外层使用锁之后，在内层仍然可以使用，并且不发生死锁。此外还有 synchronized（同步代码块） 也是可重入锁。
+ *
+ * tate 初始化为 0，表示未锁定状态。A 线程 lock() 时，会调用 tryAcquire() 独占该锁并将 state+1。
+ * 此后，其他线程再 tryAcquire() 时就会失败，直到 A 线程 unlock() 到 state=0（即释放锁）为止，其它线程才有机会获取该锁。
+ * 当然，释放锁之前，A 线程自己是可以重复获取此锁的（state 会累加），这就是可重入的概念。
+ * 但要注意，获取多少次就要释放多么次，这样才能保证 state 是能回到零态的。
+ *
  * ReentrantLock 对 Lock 的接口实现主要依赖了内部抽象静态类 Sync
+ * 一个独占锁的功能：有且只有一个线程获取到锁，其余线程全部挂起，直到该拥有锁的线程释放锁，被挂起的线程被唤醒重新开始竞争锁。
+ * ReentrantLock 使用的就是 AQS 的独占 API 实现的。
  * @author: Glorze
  * @since: 2020/2/21 21:20
  */
@@ -44,10 +52,13 @@ public class ReentrantLock implements Lock, java.io.Serializable {
 
         protected final boolean tryRelease(int releases) {
             int c = getState() - releases;
-            if (Thread.currentThread() != getExclusiveOwnerThread())
+            // 如果释放的线程和获取锁的线程不是同一个，抛出非法监视器状态异常
+            if (Thread.currentThread() != getExclusiveOwnerThread()) {
                 throw new IllegalMonitorStateException();
+            }
             boolean free = false;
             if (c == 0) {
+                // 因为是重入锁的关系，不是每次释放锁 c 都等于 0，知道最后一次释放锁的时候，才通知 AQS 不需要再记录哪个线程正在获取锁
                 free = true;
                 setExclusiveOwnerThread(null);
             }
@@ -82,14 +93,23 @@ public class ReentrantLock implements Lock, java.io.Serializable {
         }
     }
 
+    /**
+     * 非公平锁
+     *  每个线程抢占锁的顺序不定，谁运气好，谁就获取到锁，和调用 lock 方法的先后顺序无关，类似于堵车时加塞的那些傻逼
+     * @author: Glorze
+     * @since: 2020/4/15 22:27
+     */
     static final class NonfairSync extends Sync {
         private static final long serialVersionUID = 7316153563782823691L;
 
         final void lock() {
-            if (compareAndSetState(0, 1))
+            // 在 lock 的时候先直接 CAS 修改一次 state 变量（尝试获取锁），成功就返回，不成功再排队，从而达到不排队直接抢占的目的
+            // 相对于公平锁，它是一开始就走 AQS 的流程排队获取锁。如果前面有调用过其 lock 方法，则排在队列中前面，也就更有机会更早的获取锁，从而达到「公平」的目的。
+            if (compareAndSetState(0, 1)) {
                 setExclusiveOwnerThread(Thread.currentThread());
-            else
+            } else {
                 acquire(1);
+            }
         }
 
         protected final boolean tryAcquire(int acquires) {
@@ -97,30 +117,48 @@ public class ReentrantLock implements Lock, java.io.Serializable {
         }
     }
 
+    /**
+     * 公平锁
+     *  每个线程抢占锁的顺序为先后调用 lock 方法的顺序依次获取锁，类似于排队吃饭。
+     */
     static final class FairSync extends Sync {
         private static final long serialVersionUID = -3000897897090466540L;
 
         final void lock() {
+            // 调用到了 AQS 的 acquire 方法
             acquire(1);
         }
 
+        /**
+         * 尝试获取锁
+         * @param acquires 在 lock 的时候传递来的，值是写死的 1
+         */
         protected final boolean tryAcquire(int acquires) {
+            // 获取当前线程
             final Thread current = Thread.currentThread();
+            // 获取父类 AQS 中的标志位
             int c = getState();
             if (c == 0) {
-                if (!hasQueuedPredecessors() &&
-                    compareAndSetState(0, acquires)) {
+                // 如果队列中没有其他线程，说明没有线程正在占有锁
+                // 同时修改一下状态位，如果通过 CAS 操作将状态改为更新成功则代表当前线程获取锁
+                if (!hasQueuedPredecessors() && compareAndSetState(0, acquires)) {
+                    // 将当前线程设置到 AQS 的一个变量中，说明这个线程拿走了锁。
                     setExclusiveOwnerThread(current);
                     return true;
                 }
             }
+            // 如果 state 不为 0 意味着锁已经被拿走了，但是因为 ReentrantLock 是可重入锁，是可以重复 lock、unlock 的
+            // 所以这里还要再判断一次当前获取锁的线程是不是当前请求锁的线程
             else if (current == getExclusiveOwnerThread()) {
+                // 如果还是当前获取锁的线程，对 state 字段进行累加操作
                 int nextc = c + acquires;
-                if (nextc < 0)
+                if (nextc < 0) {
                     throw new Error("Maximum lock count exceeded");
+                }
                 setState(nextc);
                 return true;
             }
+            // 如果如果获取锁，tryAcquire 返回 true，反之返回 false。
             return false;
         }
     }
@@ -249,15 +287,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
     }
 
     /**
-     * Attempts to release this lock.
-     *
-     * <p>If the current thread is the holder of this lock then the hold
-     * count is decremented.  If the hold count is now zero then the lock
-     * is released.  If the current thread is not the holder of this
-     * lock then {@link IllegalMonitorStateException} is thrown.
-     *
-     * @throws IllegalMonitorStateException if the current thread does not
-     *         hold this lock
+     * 调用 AQS 的 release 方法
      */
     public void unlock() {
         sync.release(1);

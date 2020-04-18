@@ -1,38 +1,3 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent;
 
 import java.util.AbstractQueue;
@@ -46,33 +11,7 @@ import java.util.Spliterators;
 import java.util.function.Consumer;
 
 /**
- * An optionally-bounded {@linkplain BlockingDeque blocking deque} based on
- * linked nodes.
- *
- * <p>The optional capacity bound constructor argument serves as a
- * way to prevent excessive expansion. The capacity, if unspecified,
- * is equal to {@link Integer#MAX_VALUE}.  Linked nodes are
- * dynamically created upon each insertion unless this would bring the
- * deque above capacity.
- *
- * <p>Most operations run in constant time (ignoring time spent
- * blocking).  Exceptions include {@link #remove(Object) remove},
- * {@link #removeFirstOccurrence removeFirstOccurrence}, {@link
- * #removeLastOccurrence removeLastOccurrence}, {@link #contains
- * contains}, {@link #iterator iterator.remove()}, and the bulk
- * operations, all of which run in linear time.
- *
- * <p>This class and its iterator implement all of the
- * <em>optional</em> methods of the {@link Collection} and {@link
- * Iterator} interfaces.
- *
- * <p>This class is a member of the
- * <a href="{@docRoot}/../technotes/guides/collections/index.html">
- * Java Collections Framework</a>.
- *
- * @since 1.6
- * @author  Doug Lea
- * @param <E> the type of elements held in this collection
+ * 一个由链表结构组成的双向阻塞队列
  */
 public class LinkedBlockingDeque<E> extends AbstractQueue<E> implements BlockingDeque<E>, java.io.Serializable {
 

@@ -1,4 +1,4 @@
-package com.glorze.concurrent;
+package learn.concurrent;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;

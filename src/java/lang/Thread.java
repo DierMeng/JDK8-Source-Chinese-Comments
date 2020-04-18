@@ -137,25 +137,18 @@ public class Thread implements Runnable {
     public static native Thread currentThread();
 
     /**
-     * A hint to the scheduler that the current thread is willing to yield
-     * its current use of a processor. The scheduler is free to ignore this
-     * hint.
+     * 调用 yield 方法会让当前线程交出 CPU 权限，让 CPU 去执行其他的线程。
+     * 跟 sleep 方法类似，同样不会释放锁。
+     * 但是 yield 不能控制具体的交出 CPU 的时间，另外，yield 方法只能让拥有相同优先级的线程有获取 CPU 执行时间的机会。
      *
-     * <p> Yield is a heuristic attempt to improve relative progression
-     * between threads that would otherwise over-utilise a CPU. Its use
-     * should be combined with detailed profiling and benchmarking to
-     * ensure that it actually has the desired effect.
-     *
-     * <p> It is rarely appropriate to use this method. It may be useful
-     * for debugging or testing purposes, where it may help to reproduce
-     * bugs due to race conditions. It may also be useful when designing
-     * concurrency control constructs such as the ones in the
-     * {@link java.util.concurrent.locks} package.
+     * 注意，调用 yield 方法并不会让线程进入阻塞状态，而是让线程重回就绪状态，它只需要等待重新获取 CPU 执行时间，这一点是和 sleep 方法不一样的。
      */
     public static native void yield();
 
     /**
-     * 线程休眠
+     * 线程休眠，参数为默秒
+     *
+     * sleep 方法不会释放锁，也就是说如果当前线程持有对某个对象的锁，则即使调用 sleep 方法，其他线程也无法访问这个对象。
      */
     public static native void sleep(long millis) throws InterruptedException;
 
@@ -181,8 +174,7 @@ public class Thread implements Runnable {
      *          <i>interrupted status</i> of the current thread is
      *          cleared when this exception is thrown.
      */
-    public static void sleep(long millis, int nanos)
-    throws InterruptedException {
+    public static void sleep(long millis, int nanos) throws InterruptedException {
         if (millis < 0) {
             throw new IllegalArgumentException("timeout value is negative");
         }
@@ -539,30 +531,12 @@ public class Thread implements Runnable {
     }
 
     /**
-     * Causes this thread to begin execution; the Java Virtual Machine
-     * calls the <code>run</code> method of this thread.
-     * <p>
-     * The result is that two threads are running concurrently: the
-     * current thread (which returns from the call to the
-     * <code>start</code> method) and the other thread (which executes its
-     * <code>run</code> method).
-     * <p>
-     * It is never legal to start a thread more than once.
-     * In particular, a thread may not be restarted once it has completed
-     * execution.
-     *
-     * @exception  IllegalThreadStateException  if the thread was already
-     *               started.
-     * @see        #run()
-     * @see        #stop()
+     * 新启一个线程执行其 run() 方法，一个线程只能 start 一次。
+     * 主要是通过调用 native start0() 来实现。
      */
     public synchronized void start() {
         /**
-         * This method is not invoked for the main method thread or "system"
-         * group threads created/set up by the VM. Any new functionality added
-         * to this method in the future may have to also be added to the VM.
-         *
-         * A zero status value corresponds to state "NEW".
+         * 判断是否是首次启动
          */
         if (threadStatus != 0)
             throw new IllegalThreadStateException();
@@ -574,6 +548,7 @@ public class Thread implements Runnable {
 
         boolean started = false;
         try {
+            // 启动线程
             start0();
             started = true;
         } finally {
@@ -590,6 +565,9 @@ public class Thread implements Runnable {
 
     /**
      * 线程任务的执行
+     *
+     * run() 方法是不需要用户来调用的，当通过 start 方法启动一个线程之后，当该线程获得了 CPU 执行时间，便进入 run 方法体去执行具体的任务。
+     * 注意，继承 Thread 类必须重写 run 方法，在 run方 法中定义具体要执行的任务。
      */
     @Override
     public void run() {
@@ -635,12 +613,21 @@ public class Thread implements Runnable {
     }
 
     /**
-     * 中断线程
+     * 此操作会将线程的中断标志位置位，至于线程作何动作那要看线程了。
+     *  1.如果线程 sleep()、wait()、join() 等处于阻塞状态，那么线程会定时检查中断状态位。
+     *      如果发现中断状态位为 true，则会在这些阻塞方法调用处抛出 InterruptedException 异常，并且在抛出异常后立即将线程的中断状态位清除，即重新设置为false。
+     *      抛出异常是为了线程从阻塞状态醒过来，并在结束线程前让程序员有足够的时间来处理中断请求。
+     *  2.如果线程正在运行、争用 synchronized、lock() 等，那么是不可中断的，他们会忽略。
+     *
+     * 判断线程中断的三种方式：
+     *  1.isInterrupted() 此方法只会读取线程的中断标志位，并不会重置。
+     *  2.interrupted() 此方法读取线程的中断标志位，并会重置。
+     *  3.throw InterruptException 抛出该异常的同时，会重置中断标志位。
      */
     public void interrupt() {
-        if (this != Thread.currentThread())
+        if (this != Thread.currentThread()) {
             checkAccess();
-
+        }
         synchronized (blockerLock) {
             Interruptible b = blocker;
             if (b != null) {
@@ -673,19 +660,7 @@ public class Thread implements Runnable {
         return currentThread().isInterrupted(true);
     }
 
-    /**
-     * Tests whether this thread has been interrupted.  The <i>interrupted
-     * status</i> of the thread is unaffected by this method.
-     *
-     * <p>A thread interruption ignored because a thread was not alive
-     * at the time of the interrupt will be reflected by this method
-     * returning false.
-     *
-     * @return  <code>true</code> if this thread has been interrupted;
-     *          <code>false</code> otherwise.
-     * @see     #interrupted()
-     * @revised 6.0
-     */
+
     public boolean isInterrupted() {
         return isInterrupted(false);
     }
@@ -729,28 +704,9 @@ public class Thread implements Runnable {
     public final native boolean isAlive();
 
     /**
-     * Suspends this thread.
-     * <p>
-     * First, the <code>checkAccess</code> method of this thread is called
-     * with no arguments. This may result in throwing a
-     * <code>SecurityException </code>(in the current thread).
-     * <p>
-     * If the thread is alive, it is suspended and makes no further
-     * progress unless and until it is resumed.
-     *
-     * @exception  SecurityException  if the current thread cannot modify
-     *               this thread.
-     * @see #checkAccess
-     * @deprecated   This method has been deprecated, as it is
-     *   inherently deadlock-prone.  If the target thread holds a lock on the
-     *   monitor protecting a critical system resource when it is suspended, no
-     *   thread can access this resource until the target thread is resumed. If
-     *   the thread that would resume the target thread attempts to lock this
-     *   monitor prior to calling <code>resume</code>, deadlock results.  Such
-     *   deadlocks typically manifest themselves as "frozen" processes.
-     *   For more information, see
-     *   <a href="{@docRoot}/../technotes/guides/concurrency/threadPrimitiveDeprecation.html">Why
-     *   are Thread.stop, Thread.suspend and Thread.resume Deprecated?</a>.
+     * 挂起线程，直到被 resume，才会苏醒。
+     * 调用 suspend() 的线程和调用 resume() 的线程，可能会因为争锁的问题而发生死锁
+     * JDK 7 开始已经不推荐使用
      */
     @Deprecated
     public final void suspend() {
@@ -944,40 +900,22 @@ public class Thread implements Runnable {
     public native int countStackFrames();
 
     /**
-     * Waits at most {@code millis} milliseconds for this thread to
-     * die. A timeout of {@code 0} means to wait forever.
      *
-     * <p> This implementation uses a loop of {@code this.wait} calls
-     * conditioned on {@code this.isAlive}. As a thread terminates the
-     * {@code this.notifyAll} method is invoked. It is recommended that
-     * applications not use {@code wait}, {@code notify}, or
-     * {@code notifyAll} on {@code Thread} instances.
-     *
-     * @param  millis
-     *         the time to wait in milliseconds
-     *
-     * @throws  IllegalArgumentException
-     *          if the value of {@code millis} is negative
-     *
-     * @throws  InterruptedException
-     *          if any thread has interrupted the current thread. The
-     *          <i>interrupted status</i> of the current thread is
-     *          cleared when this exception is thrown.
      */
-    public final synchronized void join(long millis)
-    throws InterruptedException {
+    public final synchronized void join(long millis) throws InterruptedException {
         long base = System.currentTimeMillis();
         long now = 0;
 
         if (millis < 0) {
             throw new IllegalArgumentException("timeout value is negative");
         }
-
+        // 0 则需要一直等到目标线程 run 完
         if (millis == 0) {
             while (isAlive()) {
                 wait(0);
             }
         } else {
+            // 如果目标线程未 run 完且阻塞时间未到，那么调用线程会一直等待。
             while (isAlive()) {
                 long delay = millis - now;
                 if (delay <= 0) {
@@ -1034,19 +972,10 @@ public class Thread implements Runnable {
     }
 
     /**
-     * Waits for this thread to die.
-     *
-     * <p> An invocation of this method behaves in exactly the same
-     * way as the invocation
-     *
-     * <blockquote>
-     * {@linkplain #join(long) join}{@code (0)}
-     * </blockquote>
-     *
-     * @throws  InterruptedException
-     *          if any thread has interrupted the current thread. The
-     *          <i>interrupted status</i> of the current thread is
-     *          cleared when this exception is thrown.
+     * 实际是利用了 wait()，只不过它不用等待 notify()/notifyAll()，且不受其影响。
+     * 它结束的条件是：
+     *  1.等待时间到；
+     *  2.目标线程已经 run 完（通过 isAlive() 来判断）。
      */
     public final void join() throws InterruptedException {
         join(0);

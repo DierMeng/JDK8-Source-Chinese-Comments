@@ -503,27 +503,17 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @exception  NumberFormatException if the {@code String}
      *             does not contain a parsable {@code int}.
      */
-    public static int parseInt(String s, int radix)
-                throws NumberFormatException
-    {
-        /*
-         * WARNING: This method may be invoked early during VM initialization
-         * before IntegerCache is initialized. Care must be taken to not use
-         * the valueOf method.
-         */
-
+    public static int parseInt(String s, int radix) throws NumberFormatException {
         if (s == null) {
             throw new NumberFormatException("null");
         }
 
         if (radix < Character.MIN_RADIX) {
-            throw new NumberFormatException("radix " + radix +
-                                            " less than Character.MIN_RADIX");
+            throw new NumberFormatException("radix " + radix + " less than Character.MIN_RADIX");
         }
 
         if (radix > Character.MAX_RADIX) {
-            throw new NumberFormatException("radix " + radix +
-                                            " greater than Character.MAX_RADIX");
+            throw new NumberFormatException("radix " + radix + " greater than Character.MAX_RADIX");
         }
 
         int result = 0;

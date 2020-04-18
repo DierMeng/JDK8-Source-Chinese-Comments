@@ -1,38 +1,3 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea and Martin Buchholz with assistance from members of
- * JCP JSR-166 Expert Group and released to the public domain, as explained
- * at http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent;
 
 import java.util.AbstractCollection;
@@ -47,47 +12,7 @@ import java.util.Spliterators;
 import java.util.function.Consumer;
 
 /**
- * An unbounded concurrent {@linkplain Deque deque} based on linked nodes.
- * Concurrent insertion, removal, and access operations execute safely
- * across multiple threads.
- * A {@code ConcurrentLinkedDeque} is an appropriate choice when
- * many threads will share access to a common collection.
- * Like most other concurrent collection implementations, this class
- * does not permit the use of {@code null} elements.
- *
- * <p>Iterators and spliterators are
- * <a href="package-summary.html#Weakly"><i>weakly consistent</i></a>.
- *
- * <p>Beware that, unlike in most collections, the {@code size} method
- * is <em>NOT</em> a constant-time operation. Because of the
- * asynchronous nature of these deques, determining the current number
- * of elements requires a traversal of the elements, and so may report
- * inaccurate results if this collection is modified during traversal.
- * Additionally, the bulk operations {@code addAll},
- * {@code removeAll}, {@code retainAll}, {@code containsAll},
- * {@code equals}, and {@code toArray} are <em>not</em> guaranteed
- * to be performed atomically. For example, an iterator operating
- * concurrently with an {@code addAll} operation might view only some
- * of the added elements.
- *
- * <p>This class and its iterator implement all of the <em>optional</em>
- * methods of the {@link Deque} and {@link Iterator} interfaces.
- *
- * <p>Memory consistency effects: As with other concurrent collections,
- * actions in a thread prior to placing an object into a
- * {@code ConcurrentLinkedDeque}
- * <a href="package-summary.html#MemoryVisibility"><i>happen-before</i></a>
- * actions subsequent to the access or removal of that element from
- * the {@code ConcurrentLinkedDeque} in another thread.
- *
- * <p>This class is a member of the
- * <a href="{@docRoot}/../technotes/guides/collections/index.html">
- * Java Collections Framework</a>.
- *
- * @since 1.7
- * @author Doug Lea
- * @author Martin Buchholz
- * @param <E> the type of elements held in this collection
+ * 双端队列
  */
 public class ConcurrentLinkedDeque<E>
     extends AbstractCollection<E>

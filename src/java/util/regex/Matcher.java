@@ -665,18 +665,7 @@ public final class Matcher implements MatchResult {
     }
 
     /**
-     * Attempts to match the input sequence, starting at the beginning of the
-     * region, against the pattern.
-     *
-     * <p> Like the {@link #matches matches} method, this method always starts
-     * at the beginning of the region; unlike that method, it does not
-     * require that the entire region be matched.
-     *
-     * <p> If the match succeeds then more information can be obtained via the
-     * <tt>start</tt>, <tt>end</tt>, and <tt>group</tt> methods.  </p>
-     *
-     * @return  <tt>true</tt> if, and only if, a prefix of the input
-     *          sequence matches this matcher's pattern
+     * 尝试将从区域开头开始的输入序列与该模式匹配。
      */
     public boolean lookingAt() {
         return match(from, NOANCHOR);
