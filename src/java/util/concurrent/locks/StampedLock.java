@@ -6,6 +6,27 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.LockSupport;
 
+/**
+ * jdk8 版本新增的一个锁，该锁提供了三种模式的读写控制:
+ *  1.写锁 writeLock
+ *      是个排它锁或者叫独占锁，同时只有一个线程可以获取该锁，当一个线程获取该锁后，其它请求的线程必须等待，
+ *      当目前没有线程持有读锁或者写锁的时候才可以获取到该锁，请求该锁成功后会返回一个 stamp 票据变量用来表示该锁的版本，
+ *      当释放该锁时候需要 unlockWrite 并传递参数 stamp。
+ *  2.悲观读锁 readLock
+ *      是个共享锁，在没有线程获取独占写锁的情况下，同时多个线程可以获取该锁，如果已经有线程持有写锁，其他线程请求获取该读锁会被阻塞。
+ *      这里讲的悲观其实是参考数据库中的乐观悲观锁的，这里说的悲观是说在具体操作数据前悲观的认为其他线程可能要对自己操作的数据进行修改，
+ *      所以需要先对数据加锁，这是在读少写多的情况下的一种考虑,请求该锁成功后会返回一个 stamp 票据变量用来表示该锁的版本，
+ *      当释放该锁时候需要 unlockRead 并传递参数 stamp。
+ *  3.乐观读锁 tryOptimisticRead
+ *      是相对于悲观锁来说的，在操作数据前并没有通过 CAS 设置锁的状态，如果当前没有线程持有写锁，则简单的返回一个非 0 的 stamp 版本信息，
+ *      获取该 stamp 后在具体操作数据前还需要调用 validate 验证下该 stamp 是否已经不可用，
+ *      也就是看当调用 tryOptimisticRead 返回 stamp 后到到当前时间间是否有其他线程持有了写锁，如果是那么 validate 会返回 0，
+ *      否则就可以使用该 stamp 版本的锁对数据进行操作。
+ *      由于 tryOptimisticRead 并没有使用 CAS 设置锁状态所以不需要显示的释放该锁。
+ *      该锁的一个特点是适用于读多写少的场景，因为获取读锁只是使用与或操作进行检验，不涉及 CAS 操作，所以效率会高很多，但是同时由于没有使用真正的锁，
+ *      在保证数据一致性上需要拷贝一份要操作的变量到方法栈，并且在操作数据时候可能其他写线程已经修改了数据，而我们操作的是方法栈里面的数据，
+ *      也就是一个快照，所以最多返回的不是最新的数据，但是一致性还是得到保障的。
+ */
 public class StampedLock implements java.io.Serializable {
 
     private static final long serialVersionUID = -6001602636862214147L;

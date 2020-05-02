@@ -1,119 +1,60 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent.atomic;
 import java.io.Serializable;
 
 /**
- * One or more variables that together maintain an initially zero
- * {@code long} sum.  When updates (method {@link #add}) are contended
- * across threads, the set of variables may grow dynamically to reduce
- * contention. Method {@link #sum} (or, equivalently, {@link
- * #longValue}) returns the current total combined across the
- * variables maintaining the sum.
+ * LongAdder 中会维护一组（一个或多个）变量，这些变量加起来就是要以原子方式更新的 long 型变量。
+ * 当更新方法 add(long) 在线程间竞争时，该组变量可以动态增长以减缓竞争。
+ * 方法 sum() 返回当前在维持总和的变量上的总和。
+ * 与 AtomicLong 相比，LongAdder 更多地用于收集统计数据，而不是细粒度的同步控制。在低并发环境下，两者性能很相似。
+ * 但在高并发环境下，LongAdder 有着明显更高的吞吐量，但是有着更高的空间复杂度。
  *
- * <p>This class is usually preferable to {@link AtomicLong} when
- * multiple threads update a common sum that is used for purposes such
- * as collecting statistics, not for fine-grained synchronization
- * control.  Under low update contention, the two classes have similar
- * characteristics. But under high contention, expected throughput of
- * this class is significantly higher, at the expense of higher space
- * consumption.
- *
- * <p>LongAdders can be used with a {@link
- * java.util.concurrent.ConcurrentHashMap} to maintain a scalable
- * frequency map (a form of histogram or multiset). For example, to
- * add a count to a {@code ConcurrentHashMap<String,LongAdder> freqs},
- * initializing if not already present, you can use {@code
- * freqs.computeIfAbsent(k -> new LongAdder()).increment();}
- *
- * <p>This class extends {@link Number}, but does <em>not</em> define
- * methods such as {@code equals}, {@code hashCode} and {@code
- * compareTo} because instances are expected to be mutated, and so are
- * not useful as collection keys.
+ * cell 存在且更新无竞争，其余情况都通过 Striped64 的 longAccumulate 方法来完成。
  *
  * @since 1.8
- * @author Doug Lea
  */
 public class LongAdder extends Striped64 implements Serializable {
     private static final long serialVersionUID = 7249069246863182397L;
 
     /**
-     * Creates a new adder with initial sum of zero.
+     * 构造函数，创建初始和为 0 的新加法器
      */
     public LongAdder() {
     }
 
     /**
-     * Adds the given value.
-     *
-     * @param x the value to add
+     * 增加 x
      */
     public void add(long x) {
         Cell[] as; long b, v; int m; Cell a;
         if ((as = cells) != null || !casBase(b = base, b + x)) {
+            // 如果 cells 不为 null，或者 CAS base 变量失败，说明冲突了，
+            // 置 uncontended 为 true
             boolean uncontended = true;
-            if (as == null || (m = as.length - 1) < 0 ||
-                (a = as[getProbe() & m]) == null ||
-                !(uncontended = a.cas(v = a.value, v + x)))
+            if (as == null || (m = as.length - 1) < 0 || (a = as[getProbe() & m]) == null || !(uncontended = a.cas(v = a.value, v + x))) {
+                // 当 as 为 null，或 as 的长度小于等于 1，或 a 为 null
+                // 判断符合调用父类方法进行相加操作
+                // 如果所映射的槽不为空，且成功更新则返回，否则进入复杂处理流程。
                 longAccumulate(x, null, uncontended);
+            }
         }
     }
 
     /**
-     * Equivalent to {@code add(1)}.
+     * 自增
      */
     public void increment() {
         add(1L);
     }
 
     /**
-     * Equivalent to {@code add(-1)}.
+     * 自减
      */
     public void decrement() {
         add(-1L);
     }
 
     /**
-     * Returns the current sum.  The returned value is <em>NOT</em> an
-     * atomic snapshot; invocation in the absence of concurrent
-     * updates returns an accurate result, but concurrent updates that
-     * occur while the sum is being calculated might not be
-     * incorporated.
-     *
-     * @return the sum
+     * 求和,base 值加上每个 cell 的值。
      */
     public long sum() {
         Cell[] as = cells; Cell a;
@@ -128,11 +69,7 @@ public class LongAdder extends Striped64 implements Serializable {
     }
 
     /**
-     * Resets variables maintaining the sum to zero.  This method may
-     * be a useful alternative to creating a new adder, but is only
-     * effective if there are no concurrent updates.  Because this
-     * method is intrinsically racy, it should only be used when it is
-     * known that no threads are concurrently updating.
+     * 重置 cell 数组
      */
     public void reset() {
         Cell[] as = cells; Cell a;
@@ -146,14 +83,7 @@ public class LongAdder extends Striped64 implements Serializable {
     }
 
     /**
-     * Equivalent in effect to {@link #sum} followed by {@link
-     * #reset}. This method may apply for example during quiescent
-     * points between multithreaded computations.  If there are
-     * updates concurrent with this method, the returned value is
-     * <em>not</em> guaranteed to be the final value occurring before
-     * the reset.
-     *
-     * @return the sum
+     * 求和并重置
      */
     public long sumThenReset() {
         Cell[] as = cells; Cell a;

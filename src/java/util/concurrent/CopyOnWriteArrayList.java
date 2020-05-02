@@ -1,37 +1,3 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group.  Adapted and released, under explicit permission,
- * from JDK ArrayList.java which carries the following copyright:
- *
- * Copyright 1997 by Sun Microsystems, Inc.,
- * 901 San Antonio Road, Palo Alto, California, 94303, U.S.A.
- * All rights reserved.
- */
-
 package java.util.concurrent;
 import java.util.AbstractList;
 import java.util.Arrays;
@@ -53,41 +19,17 @@ import java.util.function.UnaryOperator;
 import sun.misc.SharedSecrets;
 
 /**
- * A thread-safe variant of {@link java.util.ArrayList} in which all mutative
- * operations ({@code add}, {@code set}, and so on) are implemented by
- * making a fresh copy of the underlying array.
+ * 注释来源：http://ifeve.com/java-copy-on-write/
  *
- * <p>This is ordinarily too costly, but may be <em>more</em> efficient
- * than alternatives when traversal operations vastly outnumber
- * mutations, and is useful when you cannot or don't want to
- * synchronize traversals, yet need to preclude interference among
- * concurrent threads.  The "snapshot" style iterator method uses a
- * reference to the state of the array at the point that the iterator
- * was created. This array never changes during the lifetime of the
- * iterator, so interference is impossible and the iterator is
- * guaranteed not to throw {@code ConcurrentModificationException}.
- * The iterator will not reflect additions, removals, or changes to
- * the list since the iterator was created.  Element-changing
- * operations on iterators themselves ({@code remove}, {@code set}, and
- * {@code add}) are not supported. These methods throw
- * {@code UnsupportedOperationException}.
+ * Copy-On-Write 简称 COW，是一种用于程序设计中的优化策略。
+ * 其基本思路是，从一开始大家都在共享同一个内容，当某个人想要修改这个内容的时候，才会真正把内容 Copy 出去形成一个新的内容然后再改，这是一种延时懒惰策略。
  *
- * <p>All elements are permitted, including {@code null}.
+ * 当我们往一个容器添加元素的时候，不直接往当前容器添加，而是先将当前容器进行 Copy，复制出一个新的容器，然后新的容器里添加元素，添加完元素之后，
+ * 再将原容器的引用指向新的容器。
  *
- * <p>Memory consistency effects: As with other concurrent
- * collections, actions in a thread prior to placing an object into a
- * {@code CopyOnWriteArrayList}
- * <a href="package-summary.html#MemoryVisibility"><i>happen-before</i></a>
- * actions subsequent to the access or removal of that element from
- * the {@code CopyOnWriteArrayList} in another thread.
+ * 这样做的好处是我们可以对 CopyOnWrite 容器进行并发的读，而不需要加锁，因为当前容器不会添加任何元素。
  *
- * <p>This class is a member of the
- * <a href="{@docRoot}/../technotes/guides/collections/index.html">
- * Java Collections Framework</a>.
- *
- * @since 1.5
- * @author Doug Lea
- * @param <E> the type of elements held in this collection
+ * 所以CopyOnWrite容器也是一种读写分离的思想，读和写不同的容器。用于读多写少的并发场景
  */
 public class CopyOnWriteArrayList<E> implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
     private static final long serialVersionUID = 8673264195747942595L;
@@ -390,9 +332,7 @@ public class CopyOnWriteArrayList<E> implements List<E>, RandomAccess, Cloneable
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @throws IndexOutOfBoundsException {@inheritDoc}
+     * 读的时候不需要加锁，如果读的时候有多个线程正在向 ArrayList添加数据，读还是会读到旧的数据，因为写的时候不会锁住旧的 ArrayList。
      */
     public E get(int index) {
         return get(getArray(), index);
@@ -427,10 +367,7 @@ public class CopyOnWriteArrayList<E> implements List<E>, RandomAccess, Cloneable
     }
 
     /**
-     * Appends the specified element to the end of this list.
-     *
-     * @param e element to be appended to this list
-     * @return {@code true} (as specified by {@link Collection#add})
+     * 添加的时候是需要加锁的，否则多线程写的时候会 Copy 出 N 个副本出来。
      */
     public boolean add(E e) {
         final ReentrantLock lock = this.lock;
@@ -438,8 +375,11 @@ public class CopyOnWriteArrayList<E> implements List<E>, RandomAccess, Cloneable
         try {
             Object[] elements = getArray();
             int len = elements.length;
+            // 复制出新数组
             Object[] newElements = Arrays.copyOf(elements, len + 1);
+            // 把新元素添加到新数组里
             newElements[len] = e;
+            // 把原数组引用指向新数组
             setArray(newElements);
             return true;
         } finally {

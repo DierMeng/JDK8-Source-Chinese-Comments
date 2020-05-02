@@ -7,6 +7,9 @@ import java.util.Spliterators;
 
 /**
  * 一个不存储元素的阻塞队列
+ *
+ * 生产者线程对其的插入操作 put 必须等待消费者的移除操作 take，反过来也一样。
+ * 生产者和消费者互相等待对方，握手，然后一起离开。
  */
 public class SynchronousQueue<E> extends AbstractQueue<E> implements BlockingQueue<E>, java.io.Serializable {
     private static final long serialVersionUID = -3223113410248163686L;

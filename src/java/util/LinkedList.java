@@ -9,19 +9,19 @@ import java.util.function.Consumer;
  */
 
 public class LinkedList<E> extends AbstractSequentialList<E> implements List<E>, Deque<E>, Cloneable, java.io.Serializable {
+
+    /**
+     * 集合元素的数量
+     */
     transient int size = 0;
 
     /**
-     * Pointer to first node.
-     * Invariant: (first == null && last == null) ||
-     *            (first.prev == null && first.item != null)
+     * 链表头结点
      */
     transient Node<E> first;
 
     /**
-     * Pointer to last node.
-     * Invariant: (first == null && last == null) ||
-     *            (last.next == null && last.item != null)
+     * 链表尾节点
      */
     transient Node<E> last;
 
@@ -32,12 +32,7 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements List<E>,
     }
 
     /**
-     * Constructs a list containing the elements of the specified
-     * collection, in the order they are returned by the collection's
-     * iterator.
-     *
-     * @param  c the collection whose elements are to be placed into this list
-     * @throws NullPointerException if the specified collection is null
+     * 调用 addAll 将集合 c 所有元素插入链表中
      */
     public LinkedList(Collection<? extends E> c) {
         this();
@@ -60,32 +55,44 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements List<E>,
     }
 
     /**
-     * Links e as last element.
+     * 生成新节点并插入到链表尾部，更新 last/first 节点。
      */
     void linkLast(E e) {
+        // 记录原尾部节点
         final Node<E> l = last;
+        // 以原尾部节点为新节点的前置节点
         final Node<E> newNode = new Node<>(l, e, null);
+        // 更新尾部节点
         last = newNode;
-        if (l == null)
+        // 若原链表为空链表，需要额外更新头结点
+        if (l == null) {
             first = newNode;
-        else
+        } else {
+            // 否则更新原尾节点的后置节点为现在的尾节点（新节点）
             l.next = newNode;
+        }
         size++;
         modCount++;
     }
 
     /**
-     * Inserts element e before non-null Node succ.
+     * 在 succ 节点前，插入一个新节点 e
      */
     void linkBefore(E e, Node<E> succ) {
         // assert succ != null;
+        // 保存后置节点的前置节点
         final Node<E> pred = succ.prev;
+        // 保存后置节点的前置节点
         final Node<E> newNode = new Node<>(pred, e, succ);
+        // 新节点 new 是原节点 succ 的前置节点
         succ.prev = newNode;
-        if (pred == null)
+        // 如果之前的前置节点是空，说明 succ 是原头结点。所以新节点是现在的头结点
+        if (pred == null) {
             first = newNode;
-        else
+        } else {
+            // 否则构建前置节点的后置节点为 new
             pred.next = newNode;
+        }
         size++;
         modCount++;
     }
@@ -130,31 +137,39 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements List<E>,
     }
 
     /**
-     * Unlinks non-null node x.
+     * 从链表上删除某节点
      */
     E unlink(Node<E> x) {
         // assert x != null;
+        // 当前节点的元素值
         final E element = x.item;
+        // 当前节点的后置节点
         final Node<E> next = x.next;
+        // 当前节点的前置节点
         final Node<E> prev = x.prev;
-
+        // 如果前置节点为空（当前节点原本是头结点）
         if (prev == null) {
+            // 头结点等于后置节点
             first = next;
         } else {
             prev.next = next;
+            // 将单签节点的前置节点置空
             x.prev = null;
         }
-
+        // 如果后置节点为空，说明当前节点原本是尾节点
         if (next == null) {
+            // 尾节点为前置节点
             last = prev;
         } else {
             next.prev = prev;
+            // 当前节点的后置节点置空
             x.next = null;
         }
-
+        // 当前元素值置空
         x.item = null;
         size--;
         modCount++;
+        // 返回取出的元素值
         return element;
     }
 
@@ -252,12 +267,7 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements List<E>,
     }
 
     /**
-     * Appends the specified element to the end of this list.
-     *
-     * <p>This method is equivalent to {@link #addLast}.
-     *
-     * @param e element to be appended to this list
-     * @return {@code true} (as specified by {@link Collection#add})
+     * 在尾部插入一个节点
      */
     public boolean add(E e) {
         linkLast(e);
@@ -265,20 +275,12 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements List<E>,
     }
 
     /**
-     * Removes the first occurrence of the specified element from this list,
-     * if it is present.  If this list does not contain the element, it is
-     * unchanged.  More formally, removes the element with the lowest index
-     * {@code i} such that
-     * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>
-     * (if such an element exists).  Returns {@code true} if this list
-     * contained the specified element (or equivalently, if this list
-     * changed as a result of the call).
-     *
-     * @param o element to be removed from this list, if present
-     * @return {@code true} if this list contained the specified element
+     * 删除链表中的指定节点
      */
     public boolean remove(Object o) {
+        // 如果要删除的是 null 节点（从 remove 和 add 里可以看出，允许元素为 null)
         if (o == null) {
+            // 遍历每个节点对比
             for (Node<E> x = first; x != null; x = x.next) {
                 if (x.item == null) {
                     unlink(x);
@@ -297,71 +299,70 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements List<E>,
     }
 
     /**
-     * Appends all of the elements in the specified collection to the end of
-     * this list, in the order that they are returned by the specified
-     * collection's iterator.  The behavior of this operation is undefined if
-     * the specified collection is modified while the operation is in
-     * progress.  (Note that this will occur if the specified collection is
-     * this list, and it's nonempty.)
-     *
-     * @param c collection containing elements to be added to this list
-     * @return {@code true} if this list changed as a result of the call
-     * @throws NullPointerException if the specified collection is null
+     * 在队列尾部批量添加元素
      */
     public boolean addAll(Collection<? extends E> c) {
+        // 以 size 为插入下标，插入集合 c 中所有元素
         return addAll(size, c);
     }
 
     /**
-     * Inserts all of the elements in the specified collection into this
-     * list, starting at the specified position.  Shifts the element
-     * currently at that position (if any) and any subsequent elements to
-     * the right (increases their indices).  The new elements will appear
-     * in the list in the order that they are returned by the
-     * specified collection's iterator.
-     *
-     * @param index index at which to insert the first element
-     *              from the specified collection
-     * @param c collection containing elements to be added to this list
-     * @return {@code true} if this list changed as a result of the call
-     * @throws IndexOutOfBoundsException {@inheritDoc}
-     * @throws NullPointerException if the specified collection is null
+     * 以 index 为插入下标，插入集合 c 中所有元素
      */
     public boolean addAll(int index, Collection<? extends E> c) {
+        // 检查越界 [0,size] 闭区间
         checkPositionIndex(index);
-
+        // 拿到目标集合数组
         Object[] a = c.toArray();
+        // 新增元素的数量
         int numNew = a.length;
-        if (numNew == 0)
+        // 如果新增元素数量为 0，则不增加，并返回 false
+        if (numNew == 0) {
             return false;
-
+        }
+        // index 节点的前置节点，后置节点
         Node<E> pred, succ;
+        // 在链表尾部追加数据
         if (index == size) {
+            // size节点（队尾）的后置节点一定是 null
             succ = null;
+            // 前置节点是队尾
             pred = last;
         } else {
+            // 取出 index 节点，作为后置节点
             succ = node(index);
+            // 前置节点是 index 节点的前一个节点
             pred = succ.prev;
         }
-
+        // 链表批量增加，是靠 for 循环遍历原数组，依次执行插入节点操作。对比 ArrayList 是通过 System.arraycopy 完成批量增加的
+        // 遍历要添加的节点。
         for (Object o : a) {
             @SuppressWarnings("unchecked") E e = (E) o;
+            // 以前置节点和元素值 e，构建 new 一个新节点，
             Node<E> newNode = new Node<>(pred, e, null);
-            if (pred == null)
+            // 如果前置节点是空，说明是头结点
+            if (pred == null) {
                 first = newNode;
-            else
+            } else {
+                // 否则前置节点的后置节点设置为新节点
                 pred.next = newNode;
+            }
+            // 步进，当前的节点为前置节点了，为下次添加节点做准备
             pred = newNode;
         }
-
+        // 循环结束后，判断如果后置节点是 null。 说明此时是在队尾 append 的。
         if (succ == null) {
+            // 设置尾节点
             last = pred;
         } else {
+            // 否则是在队中插入的节点，更新前置节点、后置节点
             pred.next = succ;
+            // 更新后置节点的前置节点
             succ.prev = pred;
         }
-
+        // 修改数量 size
         size += numNew;
+        // 修改 modCount
         modCount++;
         return true;
     }
@@ -412,41 +413,37 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements List<E>,
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public E set(int index, E element) {
+        // 检查越界
         checkElementIndex(index);
+        // 取出对应的 Node
         Node<E> x = node(index);
+        // 保存旧值供返回
         E oldVal = x.item;
+        // 新值覆盖旧值
         x.item = element;
         return oldVal;
     }
 
     /**
-     * Inserts the specified element at the specified position in this list.
-     * Shifts the element currently at that position (if any) and any
-     * subsequent elements to the right (adds one to their indices).
-     *
-     * @param index index at which the specified element is to be inserted
-     * @param element element to be inserted
-     * @throws IndexOutOfBoundsException {@inheritDoc}
+     * 在指定下标 index 处，插入一个节点
      */
     public void add(int index, E element) {
+        // 检查下标是否越界 [0,size]
         checkPositionIndex(index);
-
-        if (index == size)
+        // 在尾节点后插入
+        if (index == size) {
             linkLast(element);
-        else
+        } else {
+            // 在中间插入
             linkBefore(element, node(index));
+        }
     }
 
     /**
-     * Removes the element at the specified position in this list.  Shifts any
-     * subsequent elements to the left (subtracts one from their indices).
-     * Returns the element that was removed from the list.
-     *
-     * @param index the index of the element to be removed
-     * @return the element previously at the specified position
-     * @throws IndexOutOfBoundsException {@inheritDoc}
+     * 删除目标节点
      */
     public E remove(int index) {
+        // 检查是否越界
         checkElementIndex(index);
         return unlink(node(index));
     }
@@ -463,6 +460,7 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements List<E>,
      * iterator or an add operation.
      */
     private boolean isPositionIndex(int index) {
+        // 插入时的检查，下标可以是 size [0,size]
         return index >= 0 && index <= size;
     }
 
@@ -486,11 +484,11 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements List<E>,
     }
 
     /**
-     * Returns the (non-null) Node at the specified element index.
+     * 根据 index 查询出 Node
      */
     Node<E> node(int index) {
         // assert isElementIndex(index);
-
+        // 通过下标获取某个 node 的时候,增、查会根据 index 处于前半段还是后半段进行一个折半，以提升查询效率
         if (index < (size >> 1)) {
             Node<E> x = first;
             for (int i = 0; i < index; i++)
@@ -889,8 +887,20 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements List<E>,
     }
 
     private static class Node<E> {
+
+        /**
+         * 元素值
+         */
         E item;
+
+        /**
+         * 后置节点
+         */
         Node<E> next;
+
+        /**
+         * 前置节点
+         */
         Node<E> prev;
 
         Node(Node<E> prev, E element, Node<E> next) {
@@ -968,10 +978,12 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements List<E>,
      *         in proper sequence
      */
     public Object[] toArray() {
+        // new 一个新数组然后遍历链表，将每个元素存在数组里，返回
         Object[] result = new Object[size];
         int i = 0;
-        for (Node<E> x = first; x != null; x = x.next)
+        for (Node<E> x = first; x != null; x = x.next) {
             result[i++] = x.item;
+        }
         return result;
     }
 

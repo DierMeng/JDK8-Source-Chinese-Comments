@@ -14,8 +14,7 @@ import java.util.function.Consumer;
 /**
  * 一个由链表结构组成的无界阻塞队列
  */
-public class LinkedTransferQueue<E> extends AbstractQueue<E>
-    implements TransferQueue<E>, java.io.Serializable {
+public class LinkedTransferQueue<E> extends AbstractQueue<E> implements TransferQueue<E>, java.io.Serializable {
     private static final long serialVersionUID = -3223113410248163686L;
 
     /*

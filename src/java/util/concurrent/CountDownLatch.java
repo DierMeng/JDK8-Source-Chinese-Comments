@@ -6,7 +6,7 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
  *
  * 初始时需要指定一个计数器的大小，然后可被多个线程并发的实现减 1 操作，并在计数器为 0 后调用 await 方法的线程被唤醒，从而实现多线程间的协作。
  *
- * 任务分为 N 个子线程去执行，state 也初始化为 N（注意N要与线程个数一致）。
+ * 任务分为 N 个子线程去执行，state 也初始化为 N（注意 N 要与线程个数一致）。
  * 这 N 个子线程是并行执行的，每个子线程执行完后 countDown() 一次，state 会 CAS 减 1。
  * 等到所有子线程都执行完后(即 state=0)，会 unpark(线程唤醒) 主调用线程，然后主调用线程就会从 await() 函数返回，继续后余动作。
  *

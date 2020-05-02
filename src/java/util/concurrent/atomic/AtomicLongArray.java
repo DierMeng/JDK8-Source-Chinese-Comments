@@ -5,6 +5,8 @@ import sun.misc.Unsafe;
 
 /**
  * 原子变量类之数组类
+ *
+ * 可以用原子方式更新其元素的 long 数组。
  */
 public class AtomicLongArray implements java.io.Serializable {
     private static final long serialVersionUID = -2308431214976778248L;

@@ -10,7 +10,11 @@ import java.util.Spliterators;
 import java.util.Spliterator;
 
 /**
- * 一个由数组结构组成的有界阻塞队列
+ * 一个由数组结构组成的有界阻塞队列，默认为非公平锁
+ *
+ * 通过使用全局独占锁实现同时只能有一个线程进行入队或者出队操作，这个锁的粒度比较大，有点类似在方法上添加synchronized的意味。
+ *
+ * 另外相比 LinkedBlockingQueue、ArrayBlockingQueue的size 操作的结果是精确的，因为计算前加了全局锁。
  */
 public class ArrayBlockingQueue<E> extends AbstractQueue<E> implements BlockingQueue<E>, java.io.Serializable {
 
@@ -22,16 +26,24 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E> implements BlockingQ
      */
     private static final long serialVersionUID = -817911632652898426L;
 
-    /** The queued items */
+    /**
+     * 用来存放队列元素
+     * */
     final Object[] items;
 
-    /** items index for next take, poll, peek or remove */
+    /**
+     * 出队下标
+     * */
     int takeIndex;
 
-    /** items index for next put, offer, or add */
+    /**
+     * 下标标示入队元素下标
+     * */
     int putIndex;
 
-    /** Number of elements in the queue */
+    /**
+     * 统计队列元素个数
+     * */
     int count;
 
     /*
@@ -105,14 +117,18 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E> implements BlockingQ
         // assert lock.getHoldCount() == 1;
         // assert items[takeIndex] != null;
         final Object[] items = this.items;
-        @SuppressWarnings("unchecked")
+        // 获取元素值
         E x = (E) items[takeIndex];
+        // 数组中值为 null;
         items[takeIndex] = null;
-        if (++takeIndex == items.length)
+        if (++takeIndex == items.length) {
             takeIndex = 0;
+        }
         count--;
-        if (itrs != null)
+        if (itrs != null) {
             itrs.elementDequeued();
+        }
+        // 发送信号激活 notFull 条件队列里面的线程
         notFull.signal();
         return x;
     }
@@ -161,11 +177,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E> implements BlockingQ
     }
 
     /**
-     * Creates an {@code ArrayBlockingQueue} with the given (fixed)
-     * capacity and default access policy.
-     *
-     * @param capacity the capacity of this queue
-     * @throws IllegalArgumentException if {@code capacity < 1}
+     * 必须传入队列大小参数，所以为有界队列
      */
     public ArrayBlockingQueue(int capacity) {
         this(capacity, false);
@@ -245,44 +257,44 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E> implements BlockingQ
     }
 
     /**
-     * Inserts the specified element at the tail of this queue if it is
-     * possible to do so immediately without exceeding the queue's capacity,
-     * returning {@code true} upon success and {@code false} if this queue
-     * is full.  This method is generally preferable to method {@link #add},
-     * which can fail to insert an element only by throwing an exception.
-     *
-     * @throws NullPointerException if the specified element is null
+     * 在队尾插入元素，如果队列满则返回 false，否者入队返回 true。
      */
     public boolean offer(E e) {
+        // e 为 null，则抛出 NullPointerException 异常
         checkNotNull(e);
+        // 获取独占锁
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
-            if (count == items.length)
+            // 如果队列满则返回 false
+            if (count == items.length) {
                 return false;
+            }
             else {
+                // 否则插入元素
                 enqueue(e);
                 return true;
             }
         } finally {
+            // 释放锁
             lock.unlock();
         }
     }
 
     /**
-     * Inserts the specified element at the tail of this queue, waiting
-     * for space to become available if the queue is full.
-     *
-     * @throws InterruptedException {@inheritDoc}
-     * @throws NullPointerException {@inheritDoc}
+     * 在队列尾部添加元素，如果队列满则等待队列有空位置插入后返回
      */
     public void put(E e) throws InterruptedException {
         checkNotNull(e);
         final ReentrantLock lock = this.lock;
+        // 获取可被中断锁
         lock.lockInterruptibly();
         try {
-            while (count == items.length)
+            // 如果队列满，则把当前线程放入 notFull 管理的条件队列
+            while (count == items.length) {
                 notFull.await();
+            }
+            // 插入元素
             enqueue(e);
         } finally {
             lock.unlock();
@@ -317,22 +329,31 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E> implements BlockingQ
         }
     }
 
+    /**
+     * 从队头获取并移除元素，队列为空，则返回 null。
+     */
     public E poll() {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
+            //当 前队列为空则返回 null
             return (count == 0) ? null : dequeue();
         } finally {
             lock.unlock();
         }
     }
 
+    /**
+     * 从队头获取元素，如果队列为空则阻塞直到队列有元素。
+     */
     public E take() throws InterruptedException {
         final ReentrantLock lock = this.lock;
         lock.lockInterruptibly();
         try {
-            while (count == 0)
+            // 队列为空，则等待，直到队列有元素
+            while (count == 0) {
                 notEmpty.await();
+            }
             return dequeue();
         } finally {
             lock.unlock();
@@ -355,22 +376,22 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E> implements BlockingQ
         }
     }
 
+    /**
+     * 返回队列头元素但不移除该元素，队列为空，返回 null
+     */
     public E peek() {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
+            // 队列为空返回 null，否则返回头元素
             return itemAt(takeIndex); // null when queue is empty
         } finally {
             lock.unlock();
         }
     }
 
-    // this doc comment is overridden to remove the reference to collections
-    // greater in size than Integer.MAX_VALUE
     /**
-     * Returns the number of elements in this queue.
-     *
-     * @return the number of elements in this queue
+     * 获取队列元素个数，非常精确。因为计算 size 时候加了独占锁，其他线程不能入队或者出队或者删除元素
      */
     public int size() {
         final ReentrantLock lock = this.lock;

@@ -1,64 +1,10 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent.atomic;
 import java.io.Serializable;
 
 /**
  * One or more variables that together maintain an initially zero
- * {@code double} sum.  When updates (method {@link #add}) are
- * contended across threads, the set of variables may grow dynamically
- * to reduce contention.  Method {@link #sum} (or, equivalently {@link
- * #doubleValue}) returns the current total combined across the
- * variables maintaining the sum. The order of accumulation within or
- * across threads is not guaranteed. Thus, this class may not be
- * applicable if numerical stability is required, especially when
- * combining values of substantially different orders of magnitude.
- *
- * <p>This class is usually preferable to alternatives when multiple
- * threads update a common value that is used for purposes such as
- * summary statistics that are frequently updated but less frequently
- * read.
- *
- * <p>This class extends {@link Number}, but does <em>not</em> define
- * methods such as {@code equals}, {@code hashCode} and {@code
- * compareTo} because instances are expected to be mutated, and so are
- * not useful as collection keys.
  *
  * @since 1.8
- * @author Doug Lea
  */
 public class DoubleAdder extends Striped64 implements Serializable {
     private static final long serialVersionUID = 7249069246863182397L;

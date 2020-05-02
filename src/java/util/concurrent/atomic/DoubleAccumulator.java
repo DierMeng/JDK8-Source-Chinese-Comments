@@ -1,79 +1,9 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent.atomic;
 import java.io.Serializable;
 import java.util.function.DoubleBinaryOperator;
 
 /**
- * One or more variables that together maintain a running {@code double}
- * value updated using a supplied function.  When updates (method
- * {@link #accumulate}) are contended across threads, the set of variables
- * may grow dynamically to reduce contention.  Method {@link #get}
- * (or, equivalently, {@link #doubleValue}) returns the current value
- * across the variables maintaining updates.
- *
- * <p>This class is usually preferable to alternatives when multiple
- * threads update a common value that is used for purposes such as
- * summary statistics that are frequently updated but less frequently
- * read.
- *
- * <p>The supplied accumulator function should be side-effect-free,
- * since it may be re-applied when attempted updates fail due to
- * contention among threads. The function is applied with the current
- * value as its first argument, and the given update as the second
- * argument.  For example, to maintain a running maximum value, you
- * could supply {@code Double::max} along with {@code
- * Double.NEGATIVE_INFINITY} as the identity. The order of
- * accumulation within or across threads is not guaranteed. Thus, this
- * class may not be applicable if numerical stability is required,
- * especially when combining values of substantially different orders
- * of magnitude.
- *
- * <p>Class {@link DoubleAdder} provides analogs of the functionality
- * of this class for the common special case of maintaining sums.  The
- * call {@code new DoubleAdder()} is equivalent to {@code new
- * DoubleAccumulator((x, y) -> x + y, 0.0)}.
- *
- * <p>This class extends {@link Number}, but does <em>not</em> define
- * methods such as {@code equals}, {@code hashCode} and {@code
- * compareTo} because instances are expected to be mutated, and so are
- * not useful as collection keys.
- *
- * @since 1.8
- * @author Doug Lea
+ * JDK 8 新增
  */
 public class DoubleAccumulator extends Striped64 implements Serializable {
     private static final long serialVersionUID = 7249069246863182397L;

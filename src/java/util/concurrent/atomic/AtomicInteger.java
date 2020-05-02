@@ -5,6 +5,8 @@ import sun.misc.Unsafe;
 
 /**
  * 原子变量类之标量类
+ *
+ * 可以用原子方式更新的 int 值。
 */
 public class AtomicInteger extends Number implements java.io.Serializable {
     private static final long serialVersionUID = 6214790243416807050L;
@@ -38,18 +40,18 @@ public class AtomicInteger extends Number implements java.io.Serializable {
     }
 
     /**
-     * Gets the current value.
+     * 获取当前的值
      *
-     * @return the current value
+     * get 具有读取 volatile 变量的内存效果。
      */
     public final int get() {
         return value;
     }
 
     /**
-     * Sets to the given value.
+     * 设置给定的值
      *
-     * @param newValue the new value
+     * set 具有写入（分配）volatile 变量的内存效果。
      */
     public final void set(int newValue) {
         value = newValue;
@@ -66,67 +68,42 @@ public class AtomicInteger extends Number implements java.io.Serializable {
     }
 
     /**
-     * Atomically sets to the given value and returns the old value.
-     *
-     * @param newValue the new value
-     * @return the previous value
+     * 取当前的值，并设置新的值（CAS）
      */
     public final int getAndSet(int newValue) {
         return unsafe.getAndSetInt(this, valueOffset, newValue);
     }
 
     /**
-     * Atomically sets the value to the given updated value
-     * if the current value {@code ==} the expected value.
-     *
-     * @param expect the expected value
-     * @param update the new value
-     * @return {@code true} if successful. False return indicates that
-     * the actual value was not equal to the expected value.
+     * 和所有其他的读取和更新操作（如 getAndIncrement）都有读取和写入 volatile 变量的内存效果。
      */
     public final boolean compareAndSet(int expect, int update) {
         return unsafe.compareAndSwapInt(this, valueOffset, expect, update);
     }
 
     /**
-     * Atomically sets the value to the given updated value
-     * if the current value {@code ==} the expected value.
-     *
-     * <p><a href="package-summary.html#weakCompareAndSet">May fail
-     * spuriously and does not provide ordering guarantees</a>, so is
-     * only rarely an appropriate alternative to {@code compareAndSet}.
-     *
-     * @param expect the expected value
-     * @param update the new value
-     * @return {@code true} if successful
+     * 以原子方式读取和有条件地写入变量但不创建任何 happen-before 排序
      */
     public final boolean weakCompareAndSet(int expect, int update) {
         return unsafe.compareAndSwapInt(this, valueOffset, expect, update);
     }
 
     /**
-     * Atomically increments by one the current value.
-     *
-     * @return the previous value
+     * 获取当前的值，并自增
      */
     public final int getAndIncrement() {
         return unsafe.getAndAddInt(this, valueOffset, 1);
     }
 
     /**
-     * Atomically decrements by one the current value.
-     *
-     * @return the previous value
+     * 获取当前的值，并自减
      */
     public final int getAndDecrement() {
         return unsafe.getAndAddInt(this, valueOffset, -1);
     }
 
     /**
-     * Atomically adds the given value to the current value.
-     *
-     * @param delta the value to add
-     * @return the previous value
+     * 获取当前的值，并加上预期的值
      */
     public final int getAndAdd(int delta) {
         return unsafe.getAndAddInt(this, valueOffset, delta);

@@ -1,69 +1,9 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent;
 
 /**
- * A {@link BlockingQueue} in which producers may wait for consumers
- * to receive elements.  A {@code TransferQueue} may be useful for
- * example in message passing applications in which producers
- * sometimes (using method {@link #transfer}) await receipt of
- * elements by consumers invoking {@code take} or {@code poll}, while
- * at other times enqueue elements (via method {@code put}) without
- * waiting for receipt.
- * {@linkplain #tryTransfer(Object) Non-blocking} and
- * {@linkplain #tryTransfer(Object,long,TimeUnit) time-out} versions of
- * {@code tryTransfer} are also available.
- * A {@code TransferQueue} may also be queried, via {@link
- * #hasWaitingConsumer}, whether there are any threads waiting for
- * items, which is a converse analogy to a {@code peek} operation.
+ * 生产者会一直阻塞直到所添加到队列的元素被某一个消费者所消费（不仅仅是添加到队列里就完事）
  *
- * <p>Like other blocking queues, a {@code TransferQueue} may be
- * capacity bounded.  If so, an attempted transfer operation may
- * initially block waiting for available space, and/or subsequently
- * block waiting for reception by a consumer.  Note that in a queue
- * with zero capacity, such as {@link SynchronousQueue}, {@code put}
- * and {@code transfer} are effectively synonymous.
- *
- * <p>This interface is a member of the
- * <a href="{@docRoot}/../technotes/guides/collections/index.html">
- * Java Collections Framework</a>.
- *
- * @since 1.7
- * @author Doug Lea
- * @param <E> the type of elements held in this collection
+ * 在队列中已有元素的情况下，调用 transfer 方法，可以确保队列中被传递元素之前的所有元素都能被处理。
  */
 public interface TransferQueue<E> extends BlockingQueue<E> {
     /**

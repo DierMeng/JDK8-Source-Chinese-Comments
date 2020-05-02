@@ -1,125 +1,26 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent.atomic;
 import java.util.function.LongBinaryOperator;
 import java.util.function.DoubleBinaryOperator;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * A package-local class holding common representation and mechanics
- * for classes supporting dynamic striping on 64bit values. The class
- * extends Number so that concrete subclasses must publicly do so.
+ * DoubleAccumulator、DoubleAdder、LongAccumulator、LongAdder 的父类
+ *
+ * 就像一个 AtomicLong，里面维持一个 volatile 的 base，还有一个 cell 数组，cell 数组主要是存储线程需要增加或减少的值，
+ * 它能够将竞争的线程分散到自己内部的私有 cell 数组里面，所以当并发量很大的时候，线程会被部分分发去访问内部的 cell 数组。
  */
 @SuppressWarnings("serial")
 abstract class Striped64 extends Number {
-    /*
-     * This class maintains a lazily-initialized table of atomically
-     * updated variables, plus an extra "base" field. The table size
-     * is a power of two. Indexing uses masked per-thread hash codes.
-     * Nearly all declarations in this class are package-private,
-     * accessed directly by subclasses.
-     *
-     * Table entries are of class Cell; a variant of AtomicLong padded
-     * (via @sun.misc.Contended) to reduce cache contention. Padding
-     * is overkill for most Atomics because they are usually
-     * irregularly scattered in memory and thus don't interfere much
-     * with each other. But Atomic objects residing in arrays will
-     * tend to be placed adjacent to each other, and so will most
-     * often share cache lines (with a huge negative performance
-     * impact) without this precaution.
-     *
-     * In part because Cells are relatively large, we avoid creating
-     * them until they are needed.  When there is no contention, all
-     * updates are made to the base field.  Upon first contention (a
-     * failed CAS on base update), the table is initialized to size 2.
-     * The table size is doubled upon further contention until
-     * reaching the nearest power of two greater than or equal to the
-     * number of CPUS. Table slots remain empty (null) until they are
-     * needed.
-     *
-     * A single spinlock ("cellsBusy") is used for initializing and
-     * resizing the table, as well as populating slots with new Cells.
-     * There is no need for a blocking lock; when the lock is not
-     * available, threads try other slots (or the base).  During these
-     * retries, there is increased contention and reduced locality,
-     * which is still better than alternatives.
-     *
-     * The Thread probe fields maintained via ThreadLocalRandom serve
-     * as per-thread hash codes. We let them remain uninitialized as
-     * zero (if they come in this way) until they contend at slot
-     * 0. They are then initialized to values that typically do not
-     * often conflict with others.  Contention and/or table collisions
-     * are indicated by failed CASes when performing an update
-     * operation. Upon a collision, if the table size is less than
-     * the capacity, it is doubled in size unless some other thread
-     * holds the lock. If a hashed slot is empty, and lock is
-     * available, a new Cell is created. Otherwise, if the slot
-     * exists, a CAS is tried.  Retries proceed by "double hashing",
-     * using a secondary hash (Marsaglia XorShift) to try to find a
-     * free slot.
-     *
-     * The table size is capped because, when there are more threads
-     * than CPUs, supposing that each thread were bound to a CPU,
-     * there would exist a perfect hash function mapping threads to
-     * slots that eliminates collisions. When we reach capacity, we
-     * search for this mapping by randomly varying the hash codes of
-     * colliding threads.  Because search is random, and collisions
-     * only become known via CAS failures, convergence can be slow,
-     * and because threads are typically not bound to CPUS forever,
-     * may not occur at all. However, despite these limitations,
-     * observed contention rates are typically low in these cases.
-     *
-     * It is possible for a Cell to become unused when threads that
-     * once hashed to it terminate, as well as in the case where
-     * doubling the table causes no thread to hash to it under
-     * expanded mask.  We do not try to detect or remove such cells,
-     * under the assumption that for long-running instances, observed
-     * contention levels will recur, so the cells will eventually be
-     * needed again; and for short-lived ones, it does not matter.
-     */
 
     /**
-     * Padded variant of AtomicLong supporting only raw accesses plus CAS.
+     * 伪共享：让当前线程执行操作变量处于一个独立的 cache line（CPU 指令缓冲行）里面。
      *
-     * JVM intrinsics note: It would be possible to use a release-only
-     * form of CAS here, if it were provided.
+     * 用 @sun.misc.Contended 来杜绝为共享。用来保存冲突时需要增加的格子。cell CAS 方式。
      */
     @sun.misc.Contended static final class Cell {
         volatile long value;
         Cell(long x) { value = x; }
+        // CAS 操作
         final boolean cas(long cmp, long val) {
             return UNSAFE.compareAndSwapLong(this, valueOffset, cmp, val);
         }
@@ -139,22 +40,32 @@ abstract class Striped64 extends Number {
         }
     }
 
-    /** Number of CPUS, to place bound on table size */
+    /**
+     * cpu 的个数，绑定的 table
+     */
     static final int NCPU = Runtime.getRuntime().availableProcessors();
 
     /**
-     * Table of cells. When non-null, size is a power of 2.
+     * 用于存储冲突的线程
+     * cells 数组，大小为 2 的倍数
+     *
+     * 存放 Cell 的表。当不为空时大小是 2 的幂。
      */
     transient volatile Cell[] cells;
 
     /**
-     * Base value, used mainly when there is no contention, but also as
-     * a fallback during table initialization races. Updated via CAS.
+     * 基础的值。当没有冲突或冲突很少时，就会在 base 上操作，而不用加入 cell，也就是 AtomicLong 的原理
+     * 不冲突下直接在 base 上增加,通过 CAS 更改。
+     *
+     * base 值，在没有竞争时使用，也作为表初始化竞争时的一个后备。
      */
     transient volatile long base;
 
     /**
-     * Spinlock (locked via CAS) used when resizing and/or creating Cells.
+     * 判断 cells 是否有线程在使用的变量，通过 CAS 去锁定。
+     * 判断 cells 是否被一个线程使用了，如果一个线程使用，就不自旋一次换个 PROBE 来进行。
+     *
+     * 自旋锁，在 resizing 和/或创建 Cell 时使用。
      */
     transient volatile int cellsBusy;
 
@@ -200,63 +111,83 @@ abstract class Striped64 extends Number {
     }
 
     /**
-     * Handles cases of updates involving initialization, resizing,
-     * creating new Cells, and/or contention. See above for
-     * explanation. This method suffers the usual non-modularity
-     * problems of optimistic retry code, relying on rechecked sets of
-     * reads.
+     * 里面可以重新改变 table 大小，或者创建新的 cells
      *
-     * @param x the value
-     * @param fn the update function, or null for add (this convention
-     * avoids the need for an extra field or function in LongAdder).
+     * @param x 增加的 long 值
+     * @param fn 函数式编程，代表一个一个待执行操作的函数
      * @param wasUncontended false if CAS failed before call
      */
-    final void longAccumulate(long x, LongBinaryOperator fn,
-                              boolean wasUncontended) {
+    final void longAccumulate(long x, LongBinaryOperator fn, boolean wasUncontended) {
         int h;
         if ((h = getProbe()) == 0) {
+            // 如果当前线程没有初始化，就初始化当前线程
             ThreadLocalRandom.current(); // force initialization
             h = getProbe();
             wasUncontended = true;
         }
+        // // 最后的槽不为空则 true，也用于控制扩容，false重试。
         boolean collide = false;                // True if last slot nonempty
         for (;;) {
             Cell[] as; Cell a; int n; long v;
             if ((as = cells) != null && (n = as.length) > 0) {
+                // cell 有值，表已经初始化
                 if ((a = as[(n - 1) & h]) == null) {
+                    // 线程所映射到的槽是空的，尝试关联新的 cell
+                    // 进入这个方法，就说明这个位置没线程，所以你可以进来。进来后再看能不能获取到 cell 锁。
                     if (cellsBusy == 0) {       // Try to attach new Cell
+                        // 新建一个 cell，并且尝试加进去
+                        // 锁未被使用，乐观的创建并初始化 cell
                         Cell r = new Cell(x);   // Optimistically create
                         if (cellsBusy == 0 && casCellsBusy()) {
+                            // 锁仍然是空闲的、且成功获取到锁
                             boolean created = false;
                             try {               // Recheck under lock
+                                // 在持有锁时再次检查槽是否空闲
                                 Cell[] rs; int m, j;
-                                if ((rs = cells) != null &&
-                                    (m = rs.length) > 0 &&
-                                    rs[j = (m - 1) & h] == null) {
+                                if ((rs = cells) != null && (m = rs.length) > 0 && rs[j = (m - 1) & h] == null) {
+                                    // 所映射的槽仍为空
+                                    // 关联 cell 到槽
                                     rs[j] = r;
                                     created = true;
                                 }
                             } finally {
+                                // 释放锁
                                 cellsBusy = 0;
                             }
-                            if (created)
+                            if (created) {
+                                // 成功创建 cell 并关联到槽，退出
                                 break;
+                            }
+                            // 槽现在不为空了
                             continue;           // Slot is now non-empty
                         }
                     }
+                    // 锁被占用了，重试
                     collide = false;
                 }
-                else if (!wasUncontended)       // CAS already known to fail
+                // 已经知道 CAS 失败
+                else if (!wasUncontended) {       // CAS already known to fail
+                    // 在重散列后继续
                     wasUncontended = true;      // Continue after rehash
-                else if (a.cas(v = a.value, ((fn == null) ? v + x :
-                                             fn.applyAsLong(v, x))))
+                }
+                // 在当前槽的 cell 上尝试更新
+                else if (a.cas(v = a.value, ((fn == null) ? v + x : fn.applyAsLong(v, x)))) {
                     break;
-                else if (n >= NCPU || cells != as)
+                }
+                // 表大小达到上限或者扩容了
+                // 表达到上限后就不会再尝试下面 if 的扩容了，只会重散列，尝试其他槽
+                else if (n >= NCPU || cells != as) {
                     collide = false;            // At max size or stale
-                else if (!collide)
+                }
+                // 如果不存在冲突，则设置为存在冲突
+                else if (!collide) {
                     collide = true;
+                }
+                // 有竞争力，需要扩容
                 else if (cellsBusy == 0 && casCellsBusy()) {
                     try {
+                        // 扩容操作，锁空闲且成功获取到锁
+                        // 距离上一次检查后表没有改变，扩容：加倍
                         if (cells == as) {      // Expand table unless stale
                             Cell[] rs = new Cell[n << 1];
                             for (int i = 0; i < n; ++i)
@@ -264,31 +195,45 @@ abstract class Striped64 extends Number {
                             cells = rs;
                         }
                     } finally {
+                        // 释放锁
                         cellsBusy = 0;
                     }
                     collide = false;
+                    // 在扩容后的表上重试
                     continue;                   // Retry with expanded table
                 }
+                // 没办法获取锁，冲散列，尝试其他槽
                 h = advanceProbe(h);
             }
+            // 加锁的情况初始化表
             else if (cellsBusy == 0 && cells == as && casCellsBusy()) {
+                // 这是 cell 初始化的过程
+                // 直接修改 base 不成功，所以来修改 cells 做文章。
+                // cell 为 null，但是 cellsBusy=0，但是有，加入一个 cell 中。
                 boolean init = false;
                 try {                           // Initialize table
                     if (cells == as) {
+                        // 最开始 cells 的大小为 2
                         Cell[] rs = new Cell[2];
+                        // 给要增加的 x，做一个 cell 的坑。
                         rs[h & 1] = new Cell(x);
                         cells = rs;
                         init = true;
                     }
                 } finally {
+                    // 释放锁
                     cellsBusy = 0;
                 }
-                if (init)
+                if (init) {
+                    // 成功初始化，已更新，跳出循环
                     break;
+                }
             }
-            else if (casBase(v = base, ((fn == null) ? v + x :
-                                        fn.applyAsLong(v, x))))
+            else if (casBase(v = base, ((fn == null) ? v + x : fn.applyAsLong(v, x)))) {
+                // cell 为 null 并且 cellsBusy 为 1，也就是说，现在有人用 cells，我就去尝试更新 base 吧，借用 CAS 这个 base 来实现
+                // 表违背初始化，可能正在初始化，回退使用 base
                 break;                          // Fall back on using base
+            }
         }
     }
 

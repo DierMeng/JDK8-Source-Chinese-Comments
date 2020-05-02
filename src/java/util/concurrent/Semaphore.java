@@ -4,6 +4,10 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 /**
  * 提供了比 synchronized 机制更高的性能和可伸缩性
+ *
+ * 用来控制同时访问特定资源的线程数量，它通过协调各个线程，以保证合理的使用公共资源。
+ *
+ * 可以用于做流量控制，特别公用资源有限的应用场景，比如数据库连接。
  */
 public class Semaphore implements java.io.Serializable {
     private static final long serialVersionUID = -3222578661600680210L;
@@ -433,11 +437,7 @@ public class Semaphore implements java.io.Serializable {
     }
 
     /**
-     * Returns the current number of permits available in this semaphore.
-     *
-     * <p>This method is typically used for debugging and testing purposes.
-     *
-     * @return the number of permits available in this semaphore
+     * 返回此信号量中当前可用的许可证数。
      */
     public int availablePermits() {
         return sync.getPermits();
@@ -453,14 +453,7 @@ public class Semaphore implements java.io.Serializable {
     }
 
     /**
-     * Shrinks the number of available permits by the indicated
-     * reduction. This method can be useful in subclasses that use
-     * semaphores to track resources that become unavailable. This
-     * method differs from {@code acquire} in that it does not block
-     * waiting for permits to become available.
-     *
-     * @param reduction the number of permits to remove
-     * @throws IllegalArgumentException if {@code reduction} is negative
+     * 减少 reduction 个许可证。
      */
     protected void reducePermits(int reduction) {
         if (reduction < 0) throw new IllegalArgumentException();
@@ -477,41 +470,21 @@ public class Semaphore implements java.io.Serializable {
     }
 
     /**
-     * Queries whether any threads are waiting to acquire. Note that
-     * because cancellations may occur at any time, a {@code true}
-     * return does not guarantee that any other thread will ever
-     * acquire.  This method is designed primarily for use in
-     * monitoring of the system state.
-     *
-     * @return {@code true} if there may be other threads waiting to
-     *         acquire the lock
+     * 是否有线程正在等待获取许可证。
      */
     public final boolean hasQueuedThreads() {
         return sync.hasQueuedThreads();
     }
 
     /**
-     * Returns an estimate of the number of threads waiting to acquire.
-     * The value is only an estimate because the number of threads may
-     * change dynamically while this method traverses internal data
-     * structures.  This method is designed for use in monitoring of the
-     * system state, not for synchronization control.
-     *
-     * @return the estimated number of threads waiting for this lock
+     * 返回正在等待获取许可证的线程数。
      */
     public final int getQueueLength() {
         return sync.getQueueLength();
     }
 
     /**
-     * Returns a collection containing threads that may be waiting to acquire.
-     * Because the actual set of threads may change dynamically while
-     * constructing this result, the returned collection is only a best-effort
-     * estimate.  The elements of the returned collection are in no particular
-     * order.  This method is designed to facilitate construction of
-     * subclasses that provide more extensive monitoring facilities.
-     *
-     * @return the collection of threads
+     * 返回所有等待获取许可证的线程集合。
      */
     protected Collection<Thread> getQueuedThreads() {
         return sync.getQueuedThreads();

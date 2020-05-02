@@ -1,38 +1,3 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent;
 import java.io.Serializable;
 import java.util.AbstractCollection;
@@ -60,61 +25,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
- * A scalable concurrent {@link ConcurrentNavigableMap} implementation.
- * The map is sorted according to the {@linkplain Comparable natural
- * ordering} of its keys, or by a {@link Comparator} provided at map
- * creation time, depending on which constructor is used.
  *
- * <p>This class implements a concurrent variant of <a
- * href="http://en.wikipedia.org/wiki/Skip_list" target="_top">SkipLists</a>
- * providing expected average <i>log(n)</i> time cost for the
- * {@code containsKey}, {@code get}, {@code put} and
- * {@code remove} operations and their variants.  Insertion, removal,
- * update, and access operations safely execute concurrently by
- * multiple threads.
- *
- * <p>Iterators and spliterators are
- * <a href="package-summary.html#Weakly"><i>weakly consistent</i></a>.
- *
- * <p>Ascending key ordered views and their iterators are faster than
- * descending ones.
- *
- * <p>All {@code Map.Entry} pairs returned by methods in this class
- * and its views represent snapshots of mappings at the time they were
- * produced. They do <em>not</em> support the {@code Entry.setValue}
- * method. (Note however that it is possible to change mappings in the
- * associated map using {@code put}, {@code putIfAbsent}, or
- * {@code replace}, depending on exactly which effect you need.)
- *
- * <p>Beware that, unlike in most collections, the {@code size}
- * method is <em>not</em> a constant-time operation. Because of the
- * asynchronous nature of these maps, determining the current number
- * of elements requires a traversal of the elements, and so may report
- * inaccurate results if this collection is modified during traversal.
- * Additionally, the bulk operations {@code putAll}, {@code equals},
- * {@code toArray}, {@code containsValue}, and {@code clear} are
- * <em>not</em> guaranteed to be performed atomically. For example, an
- * iterator operating concurrently with a {@code putAll} operation
- * might view only some of the added elements.
- *
- * <p>This class and its views and iterators implement all of the
- * <em>optional</em> methods of the {@link Map} and {@link Iterator}
- * interfaces. Like most other concurrent collections, this class does
- * <em>not</em> permit the use of {@code null} keys or values because some
- * null return values cannot be reliably distinguished from the absence of
- * elements.
- *
- * <p>This class is a member of the
- * <a href="{@docRoot}/../technotes/guides/collections/index.html">
- * Java Collections Framework</a>.
- *
- * @author Doug Lea
- * @param <K> the type of keys maintained by this map
- * @param <V> the type of mapped values
- * @since 1.6
  */
-public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
-    implements ConcurrentNavigableMap<K,V>, Cloneable, Serializable {
+public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V> implements ConcurrentNavigableMap<K,V>, Cloneable, Serializable {
     /*
      * This class implements a tree-like two-dimensionally linked skip
      * list in which the index levels are represented in separate

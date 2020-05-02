@@ -3,6 +3,8 @@ package java.util.concurrent.atomic;
 /**
  * 支持在两个变量上执行原子的条件更新
  * 更新一个「对象 - 引用」二元组，通过在引用上加上「版本号」，从而避免 ABA 问题
+ *
+ * 维护带有整数「标志」的对象引用，可以用原子方式对其进行更新。
  */
 public class AtomicStampedReference<V> {
 

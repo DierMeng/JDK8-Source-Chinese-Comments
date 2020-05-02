@@ -3,6 +3,8 @@ package java.util.concurrent.atomic;
 /**
  * 支持在两个变量上执行原子的条件更新
  * 更新一个「对象 - 布尔值」二元组，使节点保存在链表中同时又将其标记为「已删除的节点」
+ *
+ * 维护带有标记位的对象引用，可以原子方式对其进行更新。
  */
 public class AtomicMarkableReference<V> {
 

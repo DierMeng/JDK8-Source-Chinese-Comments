@@ -1,4 +1,4 @@
-package learn.concurrent;
+package learn.juc.concurrent;
 
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;

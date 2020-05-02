@@ -68,7 +68,8 @@ public class Executors {
     public static ExecutorService newCachedThreadPool() {
         // maximumPoolSize 最大可以到整型最大数，存在 OOM 风险
         // keepAliveTime 默认 60 秒
-        // 使用 SynchronousQueue 队列，一个不存储元素的阻塞队列。每个插入操作必须等到另一个线程调用移除操作，否则插入操作一直处于阻塞状态，吞吐量通常要高于 LinkedBlockingQueue。
+        // 使用 SynchronousQueue 队列，一个不存储元素的阻塞队列。每个插入操作必须等到另一个线程调用移除操作，
+        // 否则插入操作一直处于阻塞状态，吞吐量通常要高于 LinkedBlockingQueue。
         return new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
     }
 

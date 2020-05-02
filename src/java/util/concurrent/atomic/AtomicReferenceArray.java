@@ -42,6 +42,8 @@ import sun.misc.Unsafe;
 
 /**
  * 原子变量类之数组类
+ *
+ * 可以用原子方式更新其元素的对象引用数组。
  */
 public class AtomicReferenceArray<E> implements java.io.Serializable {
     private static final long serialVersionUID = -6209656149925076980L;

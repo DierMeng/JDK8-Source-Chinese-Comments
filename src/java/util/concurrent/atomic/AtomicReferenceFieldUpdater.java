@@ -13,6 +13,8 @@ import sun.reflect.Reflection;
 
 /**
  * 原子变量类之更新器类
+ *
+ * 基于反射的实用工具，可以对指定类的指定 volatile 字段进行原子更新。
  */
 public abstract class AtomicReferenceFieldUpdater<T,V> {
 

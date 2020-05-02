@@ -3,6 +3,8 @@ import sun.misc.Unsafe;
 
 /**
  * 原子变量类之标量类
+ *
+ * 可以用原子方式更新的 boolean 值。
  */
 public class AtomicBoolean implements java.io.Serializable {
     private static final long serialVersionUID = 4654671469794556979L;

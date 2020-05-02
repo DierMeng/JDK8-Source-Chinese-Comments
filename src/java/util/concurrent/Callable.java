@@ -1,58 +1,10 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent;
 
 /**
- * A task that returns a result and may throw an exception.
- * Implementors define a single method with no arguments called
- * {@code call}.
+ * 可以在 Callable 实现中声明强类型的返回值，甚至是抛出异常。
  *
- * <p>The {@code Callable} interface is similar to {@link
- * java.lang.Runnable}, in that both are designed for classes whose
- * instances are potentially executed by another thread.  A
- * {@code Runnable}, however, does not return a result and cannot
- * throw a checked exception.
- *
- * <p>The {@link Executors} class contains utility methods to
- * convert from other common forms to {@code Callable} classes.
- *
- * @see Executor
- * @since 1.5
- * @author Doug Lea
- * @param <V> the result type of method {@code call}
+ * Callable 是个泛型接口，泛型 V 就是要 call() 方法返回的类型。
+ * Callable 接口和 Runnable 接口很像，都可以被另外一个线程执行，但是 Runnable 不会返回数据也不能抛出异常。
  */
 @FunctionalInterface
 public interface Callable<V> {

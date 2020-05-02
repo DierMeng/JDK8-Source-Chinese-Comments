@@ -6,6 +6,8 @@ import sun.misc.Unsafe;
 
 /**
  * 原子变量类之标量类
+ *
+ * 可以用原子方式更新的 long 值。
  */
 public class AtomicLong extends Number implements java.io.Serializable {
     private static final long serialVersionUID = 1927816293512124184L;
@@ -35,6 +37,9 @@ public class AtomicLong extends Number implements java.io.Serializable {
         } catch (Exception ex) { throw new Error(ex); }
     }
 
+    /**
+     * 当多线程并发自增，自减时，均通过 cas 指令从机器指令级别操作保证并发的原子性。
+     */
     private volatile long value;
 
     /**

@@ -6,6 +6,12 @@ import java.util.*;
 
 /**
  * 一个使用优先级队列实现的无界阻塞队列
+ *
+ * DelayQueue 队列中每个元素都有个过期时间，并且队列是个优先级队列，当从队列获取元素时候，只有过期元素才会出队列。
+ *
+ * 内部使用的是 PriorityQueue 存放数据，使用 ReentrantLock 实现线程同步，所以是阻塞队列。
+ *
+ * 队列里面的元素要实现 Delayed 接口，一个是获取当前剩余时间的接口，一个是元素比较的接口，因为是有优先级的队列。
  */
 public class DelayQueue<E extends Delayed> extends AbstractQueue<E> implements BlockingQueue<E> {
 
@@ -66,17 +72,17 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E> implements B
     }
 
     /**
-     * Inserts the specified element into this delay queue.
+     * 插入元素到队列，主要插入元素要实现 Delayed 接口。
      *
-     * @param e the element to add
-     * @return {@code true}
-     * @throws NullPointerException if the specified element is null
+     * 首先获取独占锁，然后添加元素到优先级队列，由于 q 是优先级队列，所以添加元素后，peek 并不一定是当前添加的元素，
      */
     public boolean offer(E e) {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
             q.offer(e);
+            // 如果为 true，说明当前元素 e 的优先级最小也就是即将过期的，
+            // 这时候激活 avaliable 变量条件队列里面的线程，通知他们队列里面有元素了。
             if (q.peek() == e) {
                 leader = null;
                 available.signal();
@@ -113,38 +119,33 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E> implements B
     }
 
     /**
-     * Retrieves and removes the head of this queue, or returns {@code null}
-     * if this queue has no elements with an expired delay.
-     *
-     * @return the head of this queue, or {@code null} if this
-     *         queue has no elements with an expired delay
+     * 获取并移除队头过期元素，否则返回 null
      */
     public E poll() {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
             E first = q.peek();
-            if (first == null || first.getDelay(NANOSECONDS) > 0)
+            // 如果队列为空，或者不为空但是队头元素没有过期则返回 null
+            if (first == null || first.getDelay(NANOSECONDS) > 0) {
                 return null;
-            else
+            } else {
                 return q.poll();
+            }
         } finally {
             lock.unlock();
         }
     }
 
     /**
-     * Retrieves and removes the head of this queue, waiting if necessary
-     * until an element with an expired delay is available on this queue.
-     *
-     * @return the head of this queue
-     * @throws InterruptedException {@inheritDoc}
+     * 获取并移除队列首元素，如果队列没有过期元素则等待。
      */
     public E take() throws InterruptedException {
         final ReentrantLock lock = this.lock;
         lock.lockInterruptibly();
         try {
             for (;;) {
+                // 获取但不移除队首元素
                 E first = q.peek();
                 if (first == null)
                     available.await();

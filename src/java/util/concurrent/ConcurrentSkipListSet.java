@@ -1,38 +1,3 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent;
 import java.util.AbstractSet;
 import java.util.Collection;
@@ -47,91 +12,34 @@ import java.util.SortedSet;
 import java.util.Spliterator;
 
 /**
- * A scalable concurrent {@link NavigableSet} implementation based on
- * a {@link ConcurrentSkipListMap}.  The elements of the set are kept
- * sorted according to their {@linkplain Comparable natural ordering},
- * or by a {@link Comparator} provided at set creation time, depending
- * on which constructor is used.
- *
- * <p>This implementation provides expected average <i>log(n)</i> time
- * cost for the {@code contains}, {@code add}, and {@code remove}
- * operations and their variants.  Insertion, removal, and access
- * operations safely execute concurrently by multiple threads.
- *
- * <p>Iterators and spliterators are
- * <a href="package-summary.html#Weakly"><i>weakly consistent</i></a>.
- *
- * <p>Ascending ordered views and their iterators are faster than
- * descending ones.
- *
- * <p>Beware that, unlike in most collections, the {@code size}
- * method is <em>not</em> a constant-time operation. Because of the
- * asynchronous nature of these sets, determining the current number
- * of elements requires a traversal of the elements, and so may report
- * inaccurate results if this collection is modified during traversal.
- * Additionally, the bulk operations {@code addAll},
- * {@code removeAll}, {@code retainAll}, {@code containsAll},
- * {@code equals}, and {@code toArray} are <em>not</em> guaranteed
- * to be performed atomically. For example, an iterator operating
- * concurrently with an {@code addAll} operation might view only some
- * of the added elements.
- *
- * <p>This class and its iterators implement all of the
- * <em>optional</em> methods of the {@link Set} and {@link Iterator}
- * interfaces. Like most other concurrent collection implementations,
- * this class does not permit the use of {@code null} elements,
- * because {@code null} arguments and return values cannot be reliably
- * distinguished from the absence of elements.
- *
- * <p>This class is a member of the
- * <a href="{@docRoot}/../technotes/guides/collections/index.html">
- * Java Collections Framework</a>.
- *
- * @author Doug Lea
- * @param <E> the type of elements maintained by this set
- * @since 1.6
+ * 通过 ConcurrentNavigableMap 来实现的，它是一个有序的线程安全的集合。
  */
 public class ConcurrentSkipListSet<E> extends AbstractSet<E> implements NavigableSet<E>, Cloneable, java.io.Serializable {
 
     private static final long serialVersionUID = -2479143111061671589L;
 
     /**
-     * The underlying map. Uses Boolean.TRUE as value for each
-     * element.  This field is declared final for the sake of thread
-     * safety, which entails some ugliness in clone().
+     * // 存储使用的map
      */
     private final ConcurrentNavigableMap<E,Object> m;
 
     /**
-     * Constructs a new, empty set that orders its elements according to
-     * their {@linkplain Comparable natural ordering}.
+     * 构造一个 map
      */
     public ConcurrentSkipListSet() {
         m = new ConcurrentSkipListMap<E,Object>();
     }
 
     /**
-     * Constructs a new, empty set that orders its elements according to
-     * the specified comparator.
-     *
-     * @param comparator the comparator that will be used to order this set.
-     *        If {@code null}, the {@linkplain Comparable natural
-     *        ordering} of the elements will be used.
+     * 构造，传入一个比较器
      */
     public ConcurrentSkipListSet(Comparator<? super E> comparator) {
         m = new ConcurrentSkipListMap<E,Object>(comparator);
     }
 
     /**
-     * Constructs a new set containing the elements in the specified
-     * collection, that orders its elements according to their
-     * {@linkplain Comparable natural ordering}.
-     *
-     * @param c The elements that will comprise the new set
-     * @throws ClassCastException if the elements in {@code c} are
-     *         not {@link Comparable}, or are not mutually comparable
-     * @throws NullPointerException if the specified collection or any
-     *         of its elements are null
+     * 使用 ConcurrentSkipListMap 初始化 map
+     * 并将集合 c 中所有元素放入到 map 中
      */
     public ConcurrentSkipListSet(Collection<? extends E> c) {
         m = new ConcurrentSkipListMap<E,Object>();
@@ -139,12 +47,8 @@ public class ConcurrentSkipListSet<E> extends AbstractSet<E> implements Navigabl
     }
 
     /**
-     * Constructs a new set containing the same elements and using the
-     * same ordering as the specified sorted set.
-     *
-     * @param s sorted set whose elements will comprise the new set
-     * @throws NullPointerException if the specified sorted set or any
-     *         of its elements are null
+     * 使用 ConcurrentSkipListMap 初始化 map
+     * 并将有序 Set 中所有元素放入到 map 中
      */
     public ConcurrentSkipListSet(SortedSet<E> s) {
         m = new ConcurrentSkipListMap<E,Object>(s.comparator());
@@ -152,17 +56,14 @@ public class ConcurrentSkipListSet<E> extends AbstractSet<E> implements Navigabl
     }
 
     /**
-     * For use by submaps
+     * ConcurrentSkipListSet 类内部返回子 set 时使用的
      */
     ConcurrentSkipListSet(ConcurrentNavigableMap<E,Object> m) {
         this.m = m;
     }
 
     /**
-     * Returns a shallow copy of this {@code ConcurrentSkipListSet}
-     * instance. (The elements themselves are not cloned.)
-     *
-     * @return a shallow copy of this set
+     * 克隆
      */
     public ConcurrentSkipListSet<E> clone() {
         try {
@@ -179,20 +80,7 @@ public class ConcurrentSkipListSet<E> extends AbstractSet<E> implements Navigabl
     /* ---------------- Set operations -------------- */
 
     /**
-     * Returns the number of elements in this set.  If this set
-     * contains more than {@code Integer.MAX_VALUE} elements, it
-     * returns {@code Integer.MAX_VALUE}.
-     *
-     * <p>Beware that, unlike in most collections, this method is
-     * <em>NOT</em> a constant-time operation. Because of the
-     * asynchronous nature of these sets, determining the current
-     * number of elements requires traversing them all to count them.
-     * Additionally, it is possible for the size to change during
-     * execution of this method, in which case the returned result
-     * will be inaccurate. Thus, this method is typically not very
-     * useful in concurrent applications.
-     *
-     * @return the number of elements in this set
+     * 元素个数
      */
     public int size() {
         return m.size();
