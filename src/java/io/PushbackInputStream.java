@@ -1,52 +1,7 @@
-/*
- * Copyright (c) 1994, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.io;
 
 /**
- * A <code>PushbackInputStream</code> adds
- * functionality to another input stream, namely
- * the  ability to "push back" or "unread"
- * one byte. This is useful in situations where
- * it is  convenient for a fragment of code
- * to read an indefinite number of data bytes
- * that  are delimited by a particular byte
- * value; after reading the terminating byte,
- * the  code fragment can "unread" it, so that
- * the next read operation on the input stream
- * will reread the byte that was pushed back.
- * For example, bytes representing the  characters
- * constituting an identifier might be terminated
- * by a byte representing an  operator character;
- * a method whose job is to read just an identifier
- * can read until it  sees the operator and
- * then push the operator back to be re-read.
- *
- * @author  David Connelly
- * @author  Jonathan Payne
- * @since   JDK1.0
+ * 推回输入流，可以把读取进来的某些数据重新回退到输入流的缓冲区之中
  */
 public
 class PushbackInputStream extends FilterInputStream {

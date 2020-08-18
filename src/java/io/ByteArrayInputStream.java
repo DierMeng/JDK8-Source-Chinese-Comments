@@ -1,47 +1,9 @@
-/*
- * Copyright (c) 1994, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.io;
 
 /**
- * A <code>ByteArrayInputStream</code> contains
- * an internal buffer that contains bytes that
- * may be read from the stream. An internal
- * counter keeps track of the next byte to
- * be supplied by the <code>read</code> method.
- * <p>
- * Closing a <tt>ByteArrayInputStream</tt> has no effect. The methods in
- * this class can be called after the stream has been closed without
- * generating an <tt>IOException</tt>.
- *
- * @author  Arthur van Hoff
- * @see     java.io.StringBufferInputStream
- * @since   JDK1.0
+ * 访问数组，把内存中的一个缓冲区作为 InputStream 使用，CPU从缓存区读取数据比从存储介质的速率快10倍以上
  */
-public
-class ByteArrayInputStream extends InputStream {
+public class ByteArrayInputStream extends InputStream {
 
     /**
      * An array of bytes that was provided

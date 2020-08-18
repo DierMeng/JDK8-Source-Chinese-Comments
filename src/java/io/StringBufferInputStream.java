@@ -1,50 +1,11 @@
-/*
- * Copyright (c) 1995, 2004, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.io;
 
 /**
- * This class allows an application to create an input stream in
- * which the bytes read are supplied by the contents of a string.
- * Applications can also read bytes from a byte array by using a
- * <code>ByteArrayInputStream</code>.
- * <p>
- * Only the low eight bits of each character in the string are used by
- * this class.
- *
- * @author     Arthur van Hoff
- * @see        java.io.ByteArrayInputStream
- * @see        java.io.StringReader
- * @since      JDK1.0
- * @deprecated This class does not properly convert characters into bytes.  As
- *             of JDK&nbsp;1.1, the preferred way to create a stream from a
- *             string is via the <code>StringReader</code> class.
+ * 把一个 String 对象作为 InputStream。不建议使用，在转换字符的问题上有缺陷。
+ * 已经过时
  */
 @Deprecated
-public
-class StringBufferInputStream extends InputStream {
+public class StringBufferInputStream extends InputStream {
     /**
      * The string from which bytes are read.
      */

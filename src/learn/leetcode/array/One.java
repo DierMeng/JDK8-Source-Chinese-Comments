@@ -1,19 +1,21 @@
-package learn.leetcode;
+package learn.leetcode.array;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 给定一个整数数组 nums 和一个目标值 target，请你在该数组中找出和为目标值的那 两个 整数，并返回他们的数组下标。
+ * 给定一个整数数组 nums 和一个目标值 target，请你在该数组中找出和为目标值的那 两个 整数，并返回他们的数组下标。
+ * 
+ *  你可以假设每种输入只会对应一个答案。但是，数组中同一个元素不能使用两遍。
  *
- * 你可以假设每种输入只会对应一个答案。但是，你不能重复利用这个数组中同样的元素。
- *
- * 举例：给定 nums = [2, 7, 11, 15], target = 9
- *
+ *  示例:
+ * 
+ *  给定 nums = [2, 7, 11, 15], target = 9
+ * 
  * 因为 nums[0] + nums[1] = 2 + 7 = 9
  * 所以返回 [0, 1]
- *
- * 代码源于 LeetCode，侵删
+ * 
+ *  Related Topics 数组 哈希表
  *
  */
 public class One {
@@ -33,7 +35,7 @@ public class One {
 
     /**
      * 方法一：暴力法
-     * 遍历每个元素 xx，并查找是否存在一个值与 target - xtarget−x 相等的目标元素。
+     * 遍历每个元素 xx，并查找是否存在一个值与 target - x 相等的目标元素。
      * 时间复杂度：O(n^2)
      *  对于每个元素，我们试图通过遍历数组的其余部分来寻找它所对应的目标元素，这将耗费 O(n) 的时间。因此时间复杂度为 O(n^2)
      * 空间复杂度：O(1)。
@@ -60,7 +62,8 @@ public class One {
      * 用「近似」来描述，是因为一旦出现冲突，查找用时可能会退化到 O(n)。
      * 但只要你仔细地挑选哈希函数，在哈希表中进行查找的用时应当被摊销为 O(1)。
      *
-     * 一个简单的实现使用了两次迭代。在第一次迭代中，我们将每个元素的值和它的索引添加到表中。然后，在第二次迭代中，我们将检查每个元素所对应的目标元素（target - nums[i]target−nums[i]）是否存在于表中。注意，该目标元素不能是 nums[i]nums[i] 本身！
+     * 一个简单的实现使用了两次迭代。在第一次迭代中，我们将每个元素的值和它的索引添加到表中。然后，在第二次迭代中，我们将检查每个元素所对应的目标元素（target - nums[i]target−nums[i]）是否存在于表中。
+     * 注意，该目标元素不能是 nums[i] 本身！
      *
      * 时间复杂度：O(n)
      *  我们把包含有 n 个元素的列表遍历两次。
@@ -103,10 +106,6 @@ public class One {
             map.put(nums[i], i);
         }
         throw new IllegalArgumentException("No two sum solution");
-    }
-
-    public static void main(String[] args) {
-
     }
 
 }

@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 1994, 2011, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.io;
 
 import java.io.InputStream;
@@ -30,17 +5,7 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 /**
- * A <code>SequenceInputStream</code> represents
- * the logical concatenation of other input
- * streams. It starts out with an ordered
- * collection of input streams and reads from
- * the first one until end of file is reached,
- * whereupon it reads from the second one,
- * and so on, until end of file is reached
- * on the last of the contained input streams.
- *
- * @author  Author van Hoff
- * @since   JDK1.0
+ * 把多个 InputStream 合并为一个 InputStream . 「序列输入流」类允许应用程序把几个输入流连续地合并起来
  */
 public
 class SequenceInputStream extends InputStream {

@@ -14,7 +14,7 @@ import java.util.Spliterator;
  *
  * 通过使用全局独占锁实现同时只能有一个线程进行入队或者出队操作，这个锁的粒度比较大，有点类似在方法上添加synchronized的意味。
  *
- * 另外相比 LinkedBlockingQueue、ArrayBlockingQueue的size 操作的结果是精确的，因为计算前加了全局锁。
+ * 另外相比 LinkedBlockingQueue、ArrayBlockingQueue的 size 操作的结果是精确的，因为计算前加了全局锁。
  */
 public class ArrayBlockingQueue<E> extends AbstractQueue<E> implements BlockingQueue<E>, java.io.Serializable {
 

@@ -1,51 +1,8 @@
-/*
- * Copyright (c) 1994, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.io;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
- * A <code>BufferedInputStream</code> adds
- * functionality to another input stream-namely,
- * the ability to buffer the input and to
- * support the <code>mark</code> and <code>reset</code>
- * methods. When  the <code>BufferedInputStream</code>
- * is created, an internal buffer array is
- * created. As bytes  from the stream are read
- * or skipped, the internal buffer is refilled
- * as necessary  from the contained input stream,
- * many bytes at a time. The <code>mark</code>
- * operation  remembers a point in the input
- * stream and the <code>reset</code> operation
- * causes all the  bytes read since the most
- * recent <code>mark</code> operation to be
- * reread before new bytes are  taken from
- * the contained input stream.
- *
- * @author  Arthur van Hoff
- * @since   JDK1.0
+ * 缓冲流，增加了缓冲功能
  */
 public
 class BufferedInputStream extends FilterInputStream {

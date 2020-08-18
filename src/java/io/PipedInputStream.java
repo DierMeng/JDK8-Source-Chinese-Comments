@@ -1,51 +1,7 @@
-/*
- * Copyright (c) 1995, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.io;
 
 /**
- * A piped input stream should be connected
- * to a piped output stream; the piped  input
- * stream then provides whatever data bytes
- * are written to the piped output  stream.
- * Typically, data is read from a <code>PipedInputStream</code>
- * object by one thread  and data is written
- * to the corresponding <code>PipedOutputStream</code>
- * by some  other thread. Attempting to use
- * both objects from a single thread is not
- * recommended, as it may deadlock the thread.
- * The piped input stream contains a buffer,
- * decoupling read operations from write operations,
- * within limits.
- * A pipe is said to be <a name="BROKEN"> <i>broken</i> </a> if a
- * thread that was providing data bytes to the connected
- * piped output stream is no longer alive.
- *
- * @author  James Gosling
- * @see     java.io.PipedOutputStream
- * @since   JDK1.0
+ * 访问管道，主要在线程中使用，一个线程通过管道输出流发送数据，而另一个线程通过管道输入流读取数据，这样可实现两个线程间的通讯
  */
 public class PipedInputStream extends InputStream {
     boolean closedByWriter = false;

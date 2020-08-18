@@ -272,7 +272,7 @@ public class ConcurrentLinkedQueue<E> extends AbstractQueue<E> implements Queue<
         int count = 0;
         for (Node<E> p = first(); p != null; p = succ(p)) {
             if (p.item != null) {
-                // // 最大返回 Integer.MAX_VALUE
+                // 最大返回 Integer.MAX_VALUE
                 if (++count == Integer.MAX_VALUE) {
                     break;
                 }

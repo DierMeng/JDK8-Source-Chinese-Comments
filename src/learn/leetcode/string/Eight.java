@@ -1,4 +1,4 @@
-package learn.leetcode;
+package learn.leetcode.string;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,8 +16,6 @@ import java.util.regex.Pattern;
  * 解题思路：
  *  一、正则表达式
  *  二、转为 char 数组进行遍历处理
- *
- *  代码源于 LeetCode，侵删
  *
  */
 public class Eight {

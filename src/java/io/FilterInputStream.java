@@ -1,49 +1,9 @@
-/*
- * Copyright (c) 1994, 2010, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.io;
 
 /**
- * A <code>FilterInputStream</code> contains
- * some other input stream, which it uses as
- * its  basic source of data, possibly transforming
- * the data along the way or providing  additional
- * functionality. The class <code>FilterInputStream</code>
- * itself simply overrides all  methods of
- * <code>InputStream</code> with versions that
- * pass all requests to the contained  input
- * stream. Subclasses of <code>FilterInputStream</code>
- * may further override some of  these methods
- * and may also provide additional methods
- * and fields.
- *
- * @author  Jonathan Payne
- * @since   JDK1.0
+ * 访问文件，把一个文件作为 InputStream ，实现对文件的读取操作
  */
-public
-class FilterInputStream extends InputStream {
+public class FilterInputStream extends InputStream {
     /**
      * The input stream to be filtered.
      */
