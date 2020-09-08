@@ -1,4 +1,4 @@
-package com.glorze.leetcode.sword.finger.offer;
+package learn.leetcode.sword.finger.offer;
 
 /**
  * 面试题18.删除链表的节点
@@ -12,12 +12,8 @@ package com.glorze.leetcode.sword.finger.offer;
  * 解题思路:
  *  设置伪节点指向头节点,如果删除的是头节点,直接返回头节点的下一个节点即可.
  *  链表节点的删除: head.next = head.next.next
- *
- * @ClassName: MyLinkedList
- * @author: 高泽
- * @since: 2020/4/14 15:42
  */
-public class MyLinkedList {
+public class Eighteen {
 
     public ListNode deleteNode(ListNode head, int val) {
         ListNode fakerNode = new ListNode(0);
