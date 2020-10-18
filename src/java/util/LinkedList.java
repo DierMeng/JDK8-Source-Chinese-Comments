@@ -587,10 +587,7 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements List<E>,
     }
 
     /**
-     * Retrieves and removes the head (first element) of this list.
-     *
-     * @return the head of this list, or {@code null} if this list is empty
-     * @since 1.5
+     * 跟 remove 相同，但是不会抛出异常
      */
     public E poll() {
         final Node<E> f = first;

@@ -59,7 +59,7 @@ public class FiveHundredEighteen {
                 if (j - coins[i-1] >= 0) {
                     dp[i][j] = dp[i - 1][j] + dp[i][j - coins[i - 1]];
                 } else {
-                  dp[i][j] = dp[i - 1][j];
+                    dp[i][j] = dp[i - 1][j];
                 }
             }
         }

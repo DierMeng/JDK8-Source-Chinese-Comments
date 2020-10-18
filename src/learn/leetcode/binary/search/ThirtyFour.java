@@ -26,8 +26,12 @@ public class ThirtyFour {
         return new int[]{res1, res2};
     }
 
+    /**
+     * 左边界二分查找
+     */
     private int leftBound(int[] nums, int target) {
-        int left = 0, right = nums.length - 1;
+        int left = 0;
+        int right = nums.length - 1;
         while (left <= right) {
             int mid = left + (right - left) / 2;
             if (nums[mid] < target) {
@@ -40,13 +44,18 @@ public class ThirtyFour {
             }
         }
         // 最后要检查 left 越界的情况
-        if (left >= nums.length || nums[left] != target)
+        if (left >= nums.length || nums[left] != target) {
             return -1;
+        }
         return left;
     }
 
+    /**
+     * 右边界二分查找
+     */
     private int rightBound(int[] nums, int target) {
-        int left = 0, right = nums.length - 1;
+        int left = 0;
+        int right = nums.length - 1;
         while (left <= right) {
             int mid = left + (right - left) / 2;
             if (nums[mid] < target) {
@@ -59,8 +68,9 @@ public class ThirtyFour {
             }
         }
         // 最后要检查 right 越界的情况
-        if (right < 0 || nums[right] != target)
+        if (right < 0 || nums[right] != target) {
             return -1;
+        }
         return right;
     }
 
