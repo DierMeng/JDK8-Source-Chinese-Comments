@@ -42,7 +42,7 @@ public class Three {
         // 哈希集合，记录每个字符是否出现过
         Set<Character> set = new HashSet<>();
         int n = s.length();
-        // 右指针，初始值为 -1就，相当于我们在字符串的左边界的左侧，还没开始移动
+        // 右指针，初始值为 -1，相当于我们在字符串的左边界的左侧，还没开始移动
         int rk = -1;
         int answer = 0;
         for (int i = 0; i < n; ++i) {

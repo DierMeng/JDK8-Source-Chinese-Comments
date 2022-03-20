@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 1999, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.lang.reflect;
 
 import java.lang.ref.WeakReference;
@@ -230,14 +205,12 @@ public class Proxy implements java.io.Serializable {
     private static final long serialVersionUID = -2222568056686623797L;
 
     /** parameter types of a proxy class constructor */
-    private static final Class<?>[] constructorParams =
-        { InvocationHandler.class };
+    private static final Class<?>[] constructorParams = { InvocationHandler.class };
 
     /**
-     * a cache of proxy classes
+     * 主要用于缓存已经创建过的代理类
      */
-    private static final WeakCache<ClassLoader, Class<?>[], Class<?>>
-        proxyClassCache = new WeakCache<>(new KeyFactory(), new ProxyClassFactory());
+    private static final WeakCache<ClassLoader, Class<?>[], Class<?>> proxyClassCache = new WeakCache<>(new KeyFactory(), new ProxyClassFactory());
 
     /**
      * the invocation handler for this proxy instance.
@@ -407,15 +380,13 @@ public class Proxy implements java.io.Serializable {
      * Generate a proxy class.  Must call the checkProxyAccess method
      * to perform permission checks before calling this.
      */
-    private static Class<?> getProxyClass0(ClassLoader loader,
-                                           Class<?>... interfaces) {
+    private static Class<?> getProxyClass0(ClassLoader loader, Class<?>... interfaces) {
         if (interfaces.length > 65535) {
             throw new IllegalArgumentException("interface limit exceeded");
         }
 
-        // If the proxy class defined by the given loader implementing
-        // the given interfaces exists, this will simply return the cached copy;
-        // otherwise, it will create the proxy class via the ProxyClassFactory
+        // 如果指定的类加载器中已经创建了实现指定接口的代理类，则查找缓存
+        // 否则通过 ProxyClassFactory 创建实现指定接口的代理类
         return proxyClassCache.get(loader, interfaces);
     }
 
@@ -627,20 +598,15 @@ public class Proxy implements java.io.Serializable {
                 proxyPkg = ReflectUtil.PROXY_PACKAGE + ".";
             }
 
-            /*
-             * Choose a name for the proxy class to generate.
-             */
+            // 代理类的名称是通过包名、代理类名称前缀以及编号这三项组成的
             long num = nextUniqueNumber.getAndIncrement();
             String proxyName = proxyPkg + proxyClassNamePrefix + num;
 
-            /*
-             * Generate the specified proxy class.
-             */
-            byte[] proxyClassFile = ProxyGenerator.generateProxyClass(
-                proxyName, interfaces, accessFlags);
+            // 生成代理类，并写入文件
+            byte[] proxyClassFile = ProxyGenerator.generateProxyClass(proxyName, interfaces, accessFlags);
             try {
-                return defineClass0(loader, proxyName,
-                                    proxyClassFile, 0, proxyClassFile.length);
+                // 加载代理类，并返回 Class 对象
+                return defineClass0(loader, proxyName, proxyClassFile, 0, proxyClassFile.length);
             } catch (ClassFormatError e) {
                 /*
                  * A ClassFormatError here means that (barring bugs in the
@@ -663,10 +629,9 @@ public class Proxy implements java.io.Serializable {
      * {@code IllegalArgumentException} for the same reasons that
      * {@code Proxy.getProxyClass} does.
      *
-     * @param   loader the class loader to define the proxy class
-     * @param   interfaces the list of interfaces for the proxy class
-     *          to implement
-     * @param   h the invocation handler to dispatch method invocations to
+     * @param   loader 加载动态生成的代理类的类加载器
+     * @param   interfaces 业务类实现的接口
+     * @param   h InvocationHandler 对象
      * @return  a proxy instance with the specified invocation handler of a
      *          proxy class that is defined by the specified class loader
      *          and that implements the specified interfaces
@@ -700,11 +665,7 @@ public class Proxy implements java.io.Serializable {
      *          {@code null}
      */
     @CallerSensitive
-    public static Object newProxyInstance(ClassLoader loader,
-                                          Class<?>[] interfaces,
-                                          InvocationHandler h)
-        throws IllegalArgumentException
-    {
+    public static Object newProxyInstance(ClassLoader loader, Class<?>[] interfaces, InvocationHandler h) throws IllegalArgumentException {
         Objects.requireNonNull(h);
 
         final Class<?>[] intfs = interfaces.clone();
@@ -714,7 +675,7 @@ public class Proxy implements java.io.Serializable {
         }
 
         /*
-         * Look up or generate the designated proxy class.
+         * 获取代理类
          */
         Class<?> cl = getProxyClass0(loader, intfs);
 
@@ -725,7 +686,7 @@ public class Proxy implements java.io.Serializable {
             if (sm != null) {
                 checkNewProxyPermission(Reflection.getCallerClass(), cl);
             }
-
+            // 获取代理类的构造方法
             final Constructor<?> cons = cl.getConstructor(constructorParams);
             final InvocationHandler ih = h;
             if (!Modifier.isPublic(cl.getModifiers())) {
@@ -736,6 +697,7 @@ public class Proxy implements java.io.Serializable {
                     }
                 });
             }
+            // 创建代理对象
             return cons.newInstance(new Object[]{h});
         } catch (IllegalAccessException|InstantiationException e) {
             throw new InternalError(e.toString(), e);

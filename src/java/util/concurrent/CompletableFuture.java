@@ -19,6 +19,12 @@ import java.util.concurrent.locks.LockSupport;
 
 /**
  * 在异步任务完成后，使用任务结果时就不需要等待，可以直接通过 thenAccept、thenApply、thenCompose 等方法将前面异步处理的结果交给另外一个异步事件处理线程来处理
+ *
+ * 异步任务结束时，会自动回调某个对象的方法；
+ * 异步任务出错时，会自动回调某个对象的方法；
+ * 主线程设置好回调后，不再关心异步任务的执行。
+ *
+ * CompletableFuture 更强大的功能是，多个 CompletableFuture                                                                                         可以串行执行
  */
 public class CompletableFuture<T> implements Future<T>, CompletionStage<T> {
 
@@ -1608,12 +1614,9 @@ public class CompletableFuture<T> implements Future<T>, CompletionStage<T> {
     }
 
     /**
-     * Returns a new CompletableFuture that is asynchronously completed
-     * by a task running in the {@link ForkJoinPool#commonPool()} with
-     * the value obtained by calling the given Supplier.
+     * 需要一个实现了 Supplier 的对象
      *
      * @param supplier a function returning the value to be used
-     * to complete the returned CompletableFuture
      * @param <U> the function's return type
      * @return the new CompletableFuture
      */

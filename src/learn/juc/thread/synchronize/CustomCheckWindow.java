@@ -15,7 +15,7 @@ public class CustomCheckWindow {
 
     public static void main(String[] args) {
         // 设定三个信号量，即 3 个服务窗口
-        // 如果信号量设置为，就是典型的互斥锁
+        // 如果信号量设置为 1，就是典型的互斥锁
         Semaphore semaphore = new Semaphore(3);
         for (int i = 0; i <= 5; i++) {
             new SecurityCheckThread(i, semaphore).start();

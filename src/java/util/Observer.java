@@ -1,47 +1,21 @@
-/*
- * Copyright (c) 1994, 1998, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
 package java.util;
 
 /**
  * A class can implement the <code>Observer</code> interface when it
  * wants to be informed of changes in observable objects.
- *
+ *∑
  * @author  Chris Warth
  * @see     java.util.Observable
  * @since   JDK1.0
  */
 public interface Observer {
     /**
-     * This method is called whenever the observed object is changed. An
-     * application calls an <tt>Observable</tt> object's
-     * <code>notifyObservers</code> method to have all the object's
-     * observers notified of the change.
+     * 提供一个 update 方法用于接收通知者的通知做出相应改变，
+     * 其中第一个 Observable 类型的参数是被观察者的引用，当需要与被观察者进行交互的时候，就需要这个引用
+     * 另一个 Object 类型的参数是被观察者传递过来的信息
      *
-     * @param   o     the observable object.
-     * @param   arg   an argument passed to the <code>notifyObservers</code>
-     *                 method.
+     * @param   o     被观察者的引用
+     * @param   arg   被观察者传来的信息
      */
     void update(Observable o, Object arg);
 }

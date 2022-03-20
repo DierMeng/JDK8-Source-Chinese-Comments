@@ -83,10 +83,7 @@ final class WeakCache<K, P, V> {
     }
 
     /**
-     * Look-up the value through the cache. This always evaluates the
-     * {@code subKeyFactory} function and optionally evaluates
-     * {@code valueFactory} function if there is no entry in the cache for given
-     * pair of (key, subKey) or the entry has already been cleared.
+     * 首先尝试从缓存中查找代理类，如果查找不到，则会创建 Factory 对象并调用其 get() 方法获取代理类。
      *
      * @param key       possibly null key
      * @param parameter parameter used together with key to create sub-key and
